@@ -1,10 +1,48 @@
-﻿@page
+@page
 @model HistorialModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Historial y reportes"; ViewData["Subtitle"] = "Consulta y exporta la actividad del hotel";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="content-banner"><span><strong>Ingresos este mes: $48.260.500 COP</strong><small>+12,4% frente al mes
+    anterior · 128 reservas completadas</small></span><a class="primary-button" href="#">↓ Exportar reporte</a>
 </div>
+<section class="table-card">
+    <div class="table-head">
+        <div>
+            <h2>Historial de reservas</h2>
+            <p>Consulta, filtra y exporta el registro de operaciones.</p>
+        </div>
+    </div>
+    <div class="filters"><input placeholder="⌕  Buscar cliente, reserva o habitación..." /><select>
+        <option>Junio 2026</option>
+        <option>Mayo 2026</option>
+    </select><select>
+    <option>Todos los estados</option>
+    <option>Pagado</option>
+</select></div>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>ID reserva</th>
+            <th>Cliente</th>
+            <th>Habitación</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Pago</th>
+            <th>Monto total</th>
+        </tr>
+    </thead>
+    <tbody>@foreach (var item in new[] { ("OS-24058","Valentina Ríos","201","12 Jun, 2026","15 Jun, 2026","Pagado","$1.142.400"),("OS-24057","Santiago Vélez","103","11 Jun, 2026","14 Jun, 2026","Pendiente","$428.400"),("OS-24056","Laura Castillo","302","10 Jun, 2026","13 Jun, 2026","Pagado","$660.450"),("OS-24055","Tomás Restrepo","204","09 Jun, 2026","11 Jun, 2026","Pagado","$440.300") }) {
+        <tr>
+            <td><strong>@item.Item1</strong></td>
+            <td>@item.Item2</td>
+            <td>Hab. @item.Item3</td>
+            <td>@item.Item4</td>
+            <td>@item.Item5</td>
+            <td><span class="payment @(item.Item6 == "Pendiente" ? "pending" : "")">@item.Item6</span></td>
+            <td><strong>@item.Item7</strong></td>
+        </tr>
+    }
+</tbody>
+</table>
+</section>

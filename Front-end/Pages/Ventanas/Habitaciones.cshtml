@@ -1,10 +1,100 @@
-﻿@page
+@page
 @model HabitacionesModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Habitaciones";
+    ViewData["Subtitle"] = "Inventario y estado operativo";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (TempData["RoomSuccess"] is string roomSuccess)
+{
+    <div class="toast success">✓ @roomSuccess</div>
+}
+@if (TempData["RoomError"] is string roomError)
+{
+    <div class="toast error">@roomError</div>
+}
+
+<div class="content-banner">
+    <span><strong>Gestión de habitaciones</strong><small>Supervisa disponibilidad, limpieza y
+        mantenimiento.</small></span>
+        <a class="primary-button" href="#crear" data-modal-open="room-modal">＋ Crear habitación</a>
+    </div>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Inventario operativo</h2>
+                <p>48 habitaciones distribuidas en 3 pisos.</p>
+            </div><select class="field-control" style="width:180px">
+            <option>Todos los estados</option>
+            <option>Disponible</option>
+            <option>Ocupado</option>
+            <option>En limpieza</option>
+        </select>
+    </div>
+    <div class="room-grid">
+        @foreach (var room in new[] { ("101", "Suite Ejecutiva", "Ocupado", "occupied", "$320.000"), ("102", "Doble Clásica", "Disponible", "available", "$185.000"), ("103", "Individual", "Reservado", "reserved", "$120.000"),
+        ("104", "Doble Clásica", "En limpieza", "cleaning", "$185.000"), ("201", "Suite Ejecutiva", "Disponible",
+    "available", "$320.000"), ("202", "Doble Clásica", "Ocupado", "occupied", "$185.000"), ("203", "Individual",
+  "Disponible", "available", "$120.000"), ("204", "Doble Clásica", "Reservado", "reserved", "$185.000"), ("301",
+       "Suite Ejecutiva", "Reservado", "reserved", "$320.000"), ("302", "Doble Clásica", "Ocupado", "occupied",
+     "$185.000"), ("303", "Individual", "En limpieza", "cleaning", "$120.000"), ("304", "Suite Ejecutiva",
+   "Disponible", "available", "$320.000") })
+        {
+            <article class="room-card @room.Item4">
+                <div class="room-top"><span><small>Habitación</small><strong>@room.Item1</strong></span><span
+                    class="status @room.Item4">@room.Item3</span></div>
+                    <div class="room-type">▱ @room.Item2</div>
+                    <div class="room-price">@room.Item5 <small>COP / noche</small></div>
+                </article>
+            }
+            @if (TempData["CreatedRoomNumber"] is string createdNumber)
+            {
+                <article class="room-card available new-room">
+                    <div class="room-top"><span><small>Nueva habitación</small><strong>@createdNumber</strong></span><span
+                        class="status available">Disponible</span></div>
+                        <div class="room-type">▱ @TempData["CreatedRoomType"]</div>
+                        <div class="room-price">@TempData["CreatedRoomPrice"] <small>COP / noche</small></div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <div class="modal-backdrop" id="room-modal" aria-hidden="true">
+            <section class="modal room-modal" role="dialog" aria-modal="true" aria-labelledby="room-title">
+                <div class="modal-heading">
+                    <div><span class="eyebrow">Inventario hotelero</span>
+                        <h2 id="room-title">Crear habitación</h2>
+                        <p>Agrega una nueva unidad a la grilla operativa del hotel.</p>
+                    </div><button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+                </div>
+                <form method="post" asp-page-handler="CreateRoom" class="room-form">
+                    <div class="room-preview"><span class="floor-tag">PISO 4</span>
+                        <div class="preview-icon">▱</div><span class="eyebrow">Nueva habitación</span><strong
+                        id="preview-number">401</strong><small id="preview-type">Doble Clásica</small><span
+                        class="status available">Disponible</span>
+                    </div>
+                    <div class="room-fields">
+                        <label class="field"><span>Número de habitación</span><input asp-for="Room.Number" id="room-number"
+                                                                                         value="401" required /></label>
+                            <label class="field"><span>Tipo de habitación</span><select asp-for="Room.Type" id="room-type">
+                                <option>Doble Clásica</option>
+                                <option>Suite Ejecutiva</option>
+                                <option>Individual</option>
+                            </select></label>
+                            <label class="field"><span>Piso</span><select asp-for="Room.Floor">
+                                <option>Piso 1</option>
+                                <option>Piso 2</option>
+                                <option>Piso 3</option>
+                                <option selected>Piso 4</option>
+                            </select></label>
+                            <label class="field"><span>Precio base por noche</span>
+                                <div class="input-suffix"><input asp-for="Room.Price" id="room-price" value="$ 185.000"
+                                                                     required /><b>COP</b></div>
+                                </label>
+                            </div>
+                            <div class="modal-actions"><button type="button" class="secondary-button"
+                                                                   data-modal-close>Cancelar</button><button class="primary-button" type="submit">＋ Crear
+                                habitación</button></div>
+                            </form>
+                        </section>
+                    </div>

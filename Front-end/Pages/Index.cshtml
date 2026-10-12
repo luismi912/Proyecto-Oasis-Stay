@@ -1,10 +1,39 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Inicia sesión";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<main class="login">
+    <section class="login-visual">
+        <a class="brand"><span class="brand-mark">O</span><span><b>Oasis</b> Stay</span></a>
+        <div class="login-quote"><span class="eyebrow" style="color:#cde8df">Hospitalidad inteligente</span>
+            <p>Todo lo que tu hotel necesita,<br />en un solo lugar.</p><span>Gestión simple. Experiencias
+            memorables.</span>
+        </div>
+    </section>
+    <section class="login-panel">
+        <div class="login-form">
+            <span class="eyebrow">Bienvenido de nuevo</span>
+            <h1>Inicia sesión</h1>
+            <p class="muted">Selecciona tu rol e ingresa tus credenciales para continuar.</p>
+            <div class="role-card"><span
+                class="role-card-icon">♜</span><span><strong>Administrador</strong><small>Acceso completo a todos
+                los módulos</small></span><span class="radio"></span></div>
+                <form method="post">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="content-banner" style="color:#b42318;background:#fff1f0;margin:0 0 16px;padding:10px 14px;">
+                            Usuario o contraseña incorrectos.</div>
+                        }
+                        <label class="field"><span>Usuario</span><input type="email" name="Username" value="admin@oasisstay.co"
+                                                                            placeholder="nombre@oasisstay.co" required /></label>
+                            <label class="field"><span>Contraseña</span><input type="password" name="Password" value="oasisstay"
+                                                                                   required /></label>
+                                <div class="login-options"><label><input type="checkbox" checked /> Recordarme</label><button
+                                    type="button">¿Olvidaste tu contraseña?</button></div>
+                                    <button class="full-button" type="submit">Ingresar al sistema&nbsp; →</button>
+                                </form>
+                                <p class="login-help">Demo: <strong>admin@oasisstay.co</strong> · <strong>oasisstay</strong></p>
+                            </div>
+                        </section>
+                    </main>

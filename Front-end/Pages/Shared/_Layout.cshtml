@@ -1,67 +1,70 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@{
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    var isLogin = currentPage == "/Index";
+}
+<!DOCTYPE html>
+<html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Front_end</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - Oasis Stay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Front_end.styles.css" asp-append-version="true" />
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Front_end</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Ventanas/Index">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Ventanas/Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Ventanas/Configuracion">Configuracion</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Ventanas/Facturacion">Facturacion</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Ventanas/Historial">Historial</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Ventanas/PanelControl">Panel de control</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Ventanas/Reservas">Reservas</a>
-                        </li>
-                    </ul>
+
+<body class="@(isLogin ? "login-body" : "app-body")">
+    @if (isLogin)
+    {
+        @RenderBody()
+    }
+    else
+    {
+        <div class="app-shell">
+            <aside class="sidebar">
+                <a class="brand" asp-page="/Index"><span class="brand-mark">O</span><span><b>Oasis</b> Stay</span></a>
+                <nav class="sidebar-nav">
+                    <span class="nav-label">Menú principal</span>
+                    <a class="@(currentPage == "/Ventanas/PanelControl" ? "active" : "")"
+                       asp-page="/Ventanas/PanelControl"><span>▦</span> Dashboard</a>
+                    <a class="@(currentPage == "/Ventanas/Reservas" ? "active" : "")"
+                       asp-page="/Ventanas/Reservas"><span>▣</span> Reservas <small>8</small></a>
+                    <a class="@(currentPage == "/Ventanas/Habitaciones" ? "active" : "")"
+                       asp-page="/Ventanas/Habitaciones"><span>▱</span> Habitaciones</a>
+                    <a class="@(currentPage == "/Ventanas/Facturacion" ? "active" : "")"
+                       asp-page="/Ventanas/Facturacion"><span>▤</span> Facturación</a>
+                    <a class="@(currentPage == "/Ventanas/Historial" ? "active" : "")"
+                       asp-page="/Ventanas/Historial"><span>◷</span> Historial</a>
+                    <a class="@(currentPage == "/Ventanas/Configuracion" ? "active" : "")"
+                       asp-page="/Ventanas/Configuracion"><span>⚙</span> Configuración</a>
+                </nav>
+                <div class="sidebar-bottom">
+                    <div class="profile"><span class="avatar">CM</span><span><b>Camila
+                        Mejía</b><small>Administrador</small></span></div>
+                        <a class="logout" asp-page="/Index">↪ Cerrar sesión</a>
+                        <small class="version">Oasis PMS · v2.4.0</small>
+                    </div>
+                </aside>
+                <div class="app-main">
+                    <header class="topbar">
+                        <div>
+                            <h1>@ViewData["Title"]</h1>
+                            <p>@(ViewData["Subtitle"] ?? "Gestión simple. Experiencias memorables.")</p>
+                        </div>
+                        <div class="topbar-actions"><button class="circle-button">⌕</button><button
+                            class="circle-button notification">♧</button><a class="primary-button"
+                                                                            asp-page="/Ventanas/Reservas" asp-fragment="nueva-reserva">＋ Nueva reserva</a></div>
+                        </header>
+                        <main class="content">@RenderBody()</main>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+            }
+            @await RenderSectionAsync("Scripts", required: false)
+        </body>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Front_end - <a asp-area="" asp-page="/Privacy">Privacy</a>
-        </div>
-    </footer>
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+    </html>

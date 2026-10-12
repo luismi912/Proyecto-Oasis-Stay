@@ -1,10 +1,66 @@
-﻿@page
+@page
 @model PanelControlModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Distribución de habitaciones"; ViewData["Subtitle"] = "Miércoles, 12 de junio de 2026";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="stats">
+    <div class="stat"><span class="stat-icon">◫</span><span><small>Ocupación hoy</small><strong>78%</strong><em>+6% vs.
+        ayer</em></span></div>
+        <div class="stat"><span class="stat-icon">▱</span><span><small>Disponibles</small><strong>12</strong><em>de 48
+            habitaciones</em></span></div>
+            <div class="stat"><span class="stat-icon"
+                                        style="color:var(--orange);background:#fff3e5">▱</span><span><small>Ocupadas</small><strong>29</strong><em>3
+                salen hoy</em></span></div>
+                <div class="stat"><span class="stat-icon"
+                                            style="color:var(--blue);background:#eaf1fc">▱</span><span><small>Reservadas</small><strong>7</strong><em>5
+                    llegan hoy</em></span></div>
+                </section>
+                <div class="dashboard-grid">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Mapa de habitaciones</h2>
+                                <p>Estado operativo del hotel en tiempo real.</p>
+                            </div><a class="text-link" asp-page="/Ventanas/Habitaciones">Ver inventario →</a>
+                        </div>
+                        <div class="room-grid">
+                            @foreach (var room in new[] { ("101", "Suite Ejecutiva", "Ocupado", "occupied", "$320.000"), ("102", "Doble Clásica", "Disponible", "available", "$185.000"), ("103", "Individual", "Reservado", "reserved",
+     "$120.000"), ("104", "Doble Clásica", "En limpieza", "cleaning", "$185.000"), ("201", "Suite Ejecutiva",
+ "Disponible", "available", "$320.000"), ("202", "Doble Clásica", "Ocupado", "occupied", "$185.000"), ("203",
+      "Individual", "Disponible", "available", "$120.000"), ("204", "Doble Clásica", "Reservado", "reserved",
+           "$185.000") })
+                            {
+                                <article class="room-card @room.Item4">
+                                    <div class="room-top"><span><small>Habitación</small><strong>@room.Item1</strong></span><span
+                                        class="status @room.Item4">@room.Item3</span></div>
+                                        <div class="room-type">▱ @room.Item2</div>
+                                        <div class="room-price">@room.Item5 <small>COP / noche</small></div>
+                                    </article>
+                                }
+                            </div>
+                        </section>
+                        <aside class="schedule">
+                            <div class="panel-header">
+                                <h3>Actividad de hoy</h3><a class="text-link" asp-page="/Ventanas/Reservas">Ver agenda</a>
+                            </div>
+                            <div class="schedule-title"><span>Próximos check-ins</span><span>3 llegadas</span></div>
+                            @foreach (var item in new[] { ("09:30", "VR", "Valentina Ríos", "Hab. 201 · 3 noches"), ("12:00", "SG",
+        "Sebastián Gil", "Hab. 103 · 2 noches"), ("15:30", "AM", "Andrea Moreno", "Hab. 304 · 4 noches") })
+                            {
+                                <div class="schedule-row">
+                                    <span class="schedule-time">@item.Item1</span><span
+                                    class="avatar small">@item.Item2</span><span><strong>@item.Item3</strong><small>@item.Item4</small></span><span
+                                    class="schedule-action">✓</span>
+                                </div>
+                            }
+                            <div class="schedule-title"><span>Próximos check-outs</span><span>2 salidas</span></div>
+                            @foreach (var item in new[] { ("11:00", "LC", "Laura Castillo", "Hab. 302 · Pendiente"), ("12:00", "TR", "Tomás Restrepo", "Hab. 104 · Pagado") })
+                            {
+                                <div class="schedule-row"><span class="schedule-time">@item.Item1</span><span
+                                    class="avatar small">@item.Item2</span><span><strong>@item.Item3</strong><small>@item.Item4</small></span><span
+                                    class="schedule-action out">↗</span></div>
+                                }
+                                <div class="notice">♧ <span><b>Recordatorio operativo</b><small>2 habitaciones esperan
+                                    inspección.</small></span></div>
+                                </aside>
+                            </div>

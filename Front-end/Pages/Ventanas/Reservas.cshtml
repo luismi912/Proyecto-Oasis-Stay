@@ -1,10 +1,142 @@
-﻿@page
+@page
 @model ReservasModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Reservas";
+    ViewData["Subtitle"] = "Gestiona las próximas estadías";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (TempData["ReservationSuccess"] is string reservationSuccess)
+{
+    <div class="toast success">✓ @reservationSuccess</div>
+}
+@if (TempData["ReservationError"] is string reservationError)
+{
+    <div class="toast error">@reservationError</div>
+}
+
+<div class="content-banner">
+    <span><strong>8 reservas activas para este mes</strong><small>Revisa llegadas, pagos y disponibilidad desde una sola
+        vista.</small></span>
+        <a class="primary-button" href="#nueva-reserva" data-modal-open="reservation-modal">＋ Nueva reserva</a>
+    </div>
+    <section class="table-card">
+        <div class="table-head">
+            <div>
+                <h2>Próximas reservas</h2>
+                <p>Consulta el estado de cada estadía.</p>
+            </div>
+            <span class="eyebrow">Junio 2026</span>
+        </div>
+        <div class="filters">
+            <input placeholder="⌕  Buscar cliente o reserva..." />
+            <select>
+                <option>Todos los estados</option>
+                <option>Pagado</option>
+                <option>Pendiente</option>
+            </select>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID reserva</th>
+                    <th>Cliente</th>
+                    <th>Habitación</th>
+                    <th>Estadía</th>
+                    <th>Pago</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in new[] { ("OS-24058", "Valentina Ríos", "201", "12 Jun — 15 Jun", "Pagado",
+     "$1.142.400"), ("OS-24057", "Santiago Vélez", "103", "11 Jun — 14 Jun", "Pendiente", "$428.400"),
+            ("OS-24056", "Laura Castillo", "302", "10 Jun — 13 Jun", "Pagado", "$660.450"), ("OS-24055", "Tomás Restrepo", "204", "09 Jun — 11 Jun", "Reembolsado", "$440.300") })
+                {
+                    <tr>
+                        <td><strong>@item.Item1</strong></td>
+                        <td>@item.Item2</td>
+                        <td>Hab. @item.Item3</td>
+                        <td>@item.Item4</td>
+                        <td><span class="payment @(item.Item5 == "Pendiente" ? "pending" : "")">@item.Item5</span></td>
+                        <td><strong>@item.Item6</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+
+    <div class="modal-backdrop" id="reservation-modal" aria-hidden="true">
+        <section class="modal reservation-modal" role="dialog" aria-modal="true" aria-labelledby="reservation-title">
+            <div class="modal-heading">
+                <div><span class="eyebrow">Nueva reserva</span>
+                    <h2 id="reservation-title">Registra una estadía</h2>
+                    <p>Completa los datos del huésped y asigna una habitación.</p>
+                </div>
+                <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+            </div>
+            <form method="post" asp-page-handler="CreateReservation" class="modal-form">
+                <div class="modal-main">
+                    <div class="step-title"><b>1</b><span><strong>Datos del huésped</strong><small>Información principal de
+                        contacto</small></span></div>
+                        <div class="form-grid">
+                            <label class="field"><span>Nombre completo</span><input asp-for="Reservation.GuestName"
+                                                                                        placeholder="Ej. Valentina Ríos" required /></label>
+                                <label class="field"><span>Documento</span><input asp-for="Reservation.Document"
+                                                                                      placeholder="CC o Pasaporte" required /></label>
+                                    <label class="field"><span>Email</span><input asp-for="Reservation.Email" type="email"
+                                                                                      placeholder="nombre@email.com" required /></label>
+                                        <label class="field"><span>Teléfono</span><input asp-for="Reservation.Phone"
+                                                                                             placeholder="+57 300 000 0000" required /></label>
+                                        </div>
+                                        <div class="step-title"><b>2</b><span><strong>Fechas de estadía</strong><small>Define llegada, salida y
+                                            ocupación</small></span></div>
+                                            <div class="stay-grid">
+                                                <label class="field"><span>Check-in</span><input asp-for="Reservation.CheckIn" type="date"
+                                                                                                     value="2026-06-12" required /></label>
+                                                    <label class="field"><span>Check-out</span><input asp-for="Reservation.CheckOut" type="date"
+                                                                                                          value="2026-06-15" required /></label>
+                                                        <label class="field"><span>Huéspedes</span><select asp-for="Reservation.Guests">
+                                                            <option value="1">1 huésped</option>
+                                                            <option value="2" selected>2 huéspedes</option>
+                                                            <option value="3">3 huéspedes</option>
+                                                            <option value="4">4 huéspedes</option>
+                                                        </select></label>
+                                                    </div>
+                                                    <div class="step-title"><b>3</b><span><strong>Selecciona una habitación</strong><small>Solo se muestran
+                                                        habitaciones disponibles</small></span></div>
+                                                        <div class="room-options">
+                                                            <label class="room-option selected"><input asp-for="Reservation.RoomNumber" type="radio" value="102"
+                                                                                                           checked data-room-price="185000" data-room-type="Doble Clásica" /><span><strong>Hab.
+                                                                102</strong><small>Doble Clásica</small></span><b>$185.000<small>/
+                                                                noche</small></b></label>
+                                                                <label class="room-option"><input asp-for="Reservation.RoomNumber" type="radio" value="201"
+                                                                                                      data-room-price="320000" data-room-type="Suite Ejecutiva" /><span><strong>Hab.
+                                                                    201</strong><small>Suite Ejecutiva</small></span><b>$320.000<small>/
+                                                                    noche</small></b></label>
+                                                                    <label class="room-option"><input asp-for="Reservation.RoomNumber" type="radio" value="203"
+                                                                                                          data-room-price="120000" data-room-type="Individual" /><span><strong>Hab.
+                                                                        203</strong><small>Individual</small></span><b>$120.000<small>/
+                                                                        noche</small></b></label>
+                                                                    </div>
+                                                                </div>
+                                                                <aside class="reservation-summary">
+                                                                    <span class="eyebrow">Resumen</span>
+                                                                    <h3>Detalle de la reserva</h3>
+                                                                    <div class="summary-room"><b id="summary-room-number">102</b><span><strong id="summary-room-type">Doble
+                                                                        Clásica</strong><small><span id="summary-nights">3</span> noches · <span
+                                                                        id="summary-guests">2</span> huéspedes</small></span></div>
+                                                                        <div class="summary-dates"><span>Llegada<strong id="summary-checkin">12 Jun 2026</strong><small>Desde
+                                                                            las 3:00 PM</small></span><b>›</b><span>Salida<strong id="summary-checkout">15 Jun
+                                                                            2026</strong><small>Hasta las 12:00 PM</small></span></div>
+                                                                            <div class="summary-line"><span>Alojamiento (<span id="summary-nights-label">3</span> noches)</span><b
+                                                                                id="summary-subtotal">$555.000</b></div>
+                                                                                <div class="summary-line"><span>IVA (19%)</span><b id="summary-tax">$105.450</b></div>
+                                                                                <div class="summary-total"><span>Total estimado<small>Pesos colombianos</small></span><b
+                                                                                    id="summary-total">$660.450 <small>COP</small></b></div>
+                                                                                    <div class="summary-note">♢ Cancelación gratuita hasta 24 horas antes del check-in.</div>
+                                                                                </aside>
+                                                                                <div class="modal-actions"><button type="button" class="secondary-button"
+                                                                                                                       data-modal-close>Cancelar</button><button class="primary-button" type="submit">✓ Confirmar
+                                                                                    reserva</button></div>
+                                                                                </form>
+                                                                            </section>
+                                                                        </div>

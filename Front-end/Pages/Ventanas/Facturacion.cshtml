@@ -1,10 +1,44 @@
-﻿@page
+@page
 @model FacturacionModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Facturación y check-out"; ViewData["Subtitle"] = "Cierre de estancia y documento fiscal";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<div class="stats">
+    <div class="stat"><span class="stat-icon">▤</span><span><small>Ingresos del
+        mes</small><strong>$48,2M</strong><em>+12,4% vs. anterior</em></span></div>
+        <div class="stat"><span class="stat-icon">✓</span><span><small>Facturas emitidas</small><strong>128</strong><em>6
+            pendientes hoy</em></span></div>
+            <div class="stat"><span class="stat-icon">◷</span><span><small>Por cobrar</small><strong>$2,4M</strong><em
+                style="color:var(--orange)">14 cuentas abiertas</em></span></div>
+            </div>
+            <section class="table-card">
+                <div class="table-head">
+                    <div>
+                        <h2>Check-outs pendientes</h2>
+                        <p>Confirma pagos y genera documentos fiscales.</p>
+                    </div><a class="primary-button" href="#">Exportar reporte</a>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Huésped</th>
+                            <th>Habitación</th>
+                            <th>Salida</th>
+                            <th>Estado</th>
+                            <th>Total</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>@foreach (var item in new[] { ("Laura Castillo","302","Hoy, 11:00 AM","Pendiente","$660.450"),("Tomás Restrepo","104","Hoy, 12:00 PM","Pagado","$440.300"),("Mariana Gómez","301","Mañana, 12:00 PM","Pagado","$1.523.200") }) {
+                        <tr>
+                            <td><strong>@item.Item1</strong></td>
+                            <td>Hab. @item.Item2</td>
+                            <td>@item.Item3</td>
+                            <td><span class="payment @(item.Item4 == "Pendiente" ? "pending" : "")">@item.Item4</span></td>
+                            <td><strong>@item.Item5</strong></td>
+                            <td><a class="text-link" href="#">Ver detalle →</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>

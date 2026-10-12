@@ -1,10 +1,16 @@
-﻿@page
+@page
 @model ConfiguracionModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Configuración"; ViewData["Subtitle"] = "Preferencias del hotel y del sistema";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="settings-card"><span class="eyebrow">Datos del hotel</span>
+    <h2>Configuración general</h2>
+    <p>Administra la información que utiliza Oasis Stay en sus operaciones.</p>
+    <div class="form-grid"><label class="field-label">Nombre del hotel<input class="field-control"
+                                                                                 value="Oasis Stay Hotel" /></label><label class="field-label">Correo de contacto<input
+        class="field-control" value="reservas@oasisstay.co" /></label><label class="field-label">Ciudad<input
+        class="field-control" value="Medellín, Colombia" /></label><label class="field-label">Moneda<select
+        class="field-control">
+        <option>Peso colombiano (COP)</option>
+    </select></label></div><br /><button class="primary-button">Guardar cambios</button>
+</section>
