@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/1. Back-end/">
+    <Project Path="Back-end/OasisStay.Api/OasisStay.Api.csproj" />
+    <Project Path="Back-end/OasisStay.Aplicacion/OasisStay.Aplicacion.csproj" />
+    <Project Path="Back-end/OasisStay.Dominio/OasisStay.Dominio.csproj" />
+    <Project Path="Back-end/OasisStay.Infraestructura/OasisStay.Infraestructura.csproj" />
+    <Project Path="Back-end/OasisStay.Pruebas/OasisStay.Pruebas.csproj" />
+  </Folder>
   <Folder Name="/3. Front-end/" />
   <Project Path="Front-end/Front-end.csproj" />
 </Solution>
