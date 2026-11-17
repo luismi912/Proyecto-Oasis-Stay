@@ -43,12 +43,18 @@ public interface IRepositorioReservas
 {
     IReadOnlyList<Reserva> BuscarPorHabitacionYFechas(Habitacion habitacion, DateTime fechaInicio, DateTime fechaFin);
     void Guardar(Reserva reserva);
+    /// <summary>Reserva con huésped y habitación (F2) [DE#4][D-21][D-31].</summary>
+    Reserva? BuscarPorId(int idReserva);
+    /// <summary>Lista de reservas del front (F2) [E2 §6].</summary>
+    IReadOnlyList<Reserva> Listar(EstadoReserva? estado, string? texto);
 }
 
 /// <summary>Huéspedes; búsqueda por documento (autocompletado) [JIRA US-03 ESC2][D-03].</summary>
 public interface IRepositorioHuespedes
 {
     Cliente? BuscarPorDocumento(string documento);
+    /// <summary>Autocompletado por tipo y número de documento [JIRA US-03 RN3][D-20].</summary>
+    Cliente? BuscarPorDocumento(TipoDocumento tipo, string documento);
     void Guardar(Cliente cliente);
 }
 
