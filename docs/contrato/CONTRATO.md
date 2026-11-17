@@ -136,7 +136,7 @@ Operaciones de los diagramas de secuencia 3-5 (`fuentes/diagramas-secuencia-nuev
 Acceso por rol (E2): Ama de llaves solo `Habitaciones`; Recepcionista operación diaria; Administrador
 indicadores, historial y reportes. Matriz (D-34): Administrador accede a todo; Recepcionista: disponibilidad, reservas, check-in, facturación, pagos y cambio de estado salvo EnLimpieza→Disponible; AmaDeLlaves: solo `Habitaciones` (listar y cambiar estado).
 
-Controles añadidos dentro de las pantallas existentes (D-30): menú de estado en la tarjeta de habitación, botón de check-in y botón "Reasignar" (D-41) en `Reservas`, detalle/consumos/pago en `Facturacion`, tipo de documento y aceptación de privacidad en `Reservas`. El alta de habitaciones es el modal de `Habitaciones` (Administrador, Piso 1-3, valor por noche = `PrecioBase`) (D-28).
+Controles añadidos dentro de las pantallas existentes (D-30): menú de estado en la tarjeta de habitación, botón de check-in y botón "Reasignar" (D-41) y select "Categoría" (D-42) en `Reservas`, detalle/consumos/pago en `Facturacion`, tipo de documento y aceptación de privacidad en `Reservas`. El alta de habitaciones es el modal de `Habitaciones` (Administrador, Piso 1-3, valor por noche = `PrecioBase`) (D-28).
 
 Datos semilla (D-29): Individual cap. 1 / $120.000; Doble Clásica cap. 2 / $185.000; Suite Ejecutiva cap. 4 / $320.000; habitaciones 101-104, 201-204 y 301-304; un usuario por rol (claves por user-secrets); servicio "Minibar".
 
