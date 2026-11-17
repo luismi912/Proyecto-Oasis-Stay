@@ -8,8 +8,13 @@ namespace Front_end.Pages
     [Authorize(Roles = "Administrador,Recepcionista")]
     public class ReservasModel : PageModel
     {
+        private const string TextoUpgrade = "La habitación nueva es de categoría superior (Upgrade). Confirme para continuar."; // [D-32]
         private readonly ReservasApi _api;
-        public ReservasModel(ReservasApi api) => _api = api;
+        private readonly HabitacionesApi _habitaciones;
+        public ReservasModel(ReservasApi api, HabitacionesApi habitaciones) { _api = api; _habitaciones = habitaciones; }
+
+        /// <summary>Tipos para el filtro de categoría de la consulta de disponibilidad [JIRA US-01].</summary>
+        public IReadOnlyList<TipoHabitacionDto> Tipos { get; private set; } = Array.Empty<TipoHabitacionDto>();
 
         [BindProperty]
         public ReservationInput Reservation { get; set; } = new();
@@ -33,11 +38,11 @@ namespace Front_end.Pages
         }
 
         /// <summary>Paso 3 del modal: habitaciones libres reales según fechas y huéspedes [JIRA US-01 ESC1-3].</summary>
-        public async Task<IActionResult> OnGetDisponibilidadAsync(DateTime fechaInicio, DateTime fechaFin, int huespedes)
+        public async Task<IActionResult> OnGetDisponibilidadAsync(DateTime fechaInicio, DateTime fechaFin, int huespedes, string? tipo = null)
         {
             try
             {
-                var (estado, cuerpo) = await _api.DisponibilidadAsync(fechaInicio, fechaFin, huespedes);
+                var (estado, cuerpo) = await _api.DisponibilidadAsync(fechaInicio, fechaFin, huespedes, tipo);
                 return new ContentResult { StatusCode = estado, Content = cuerpo, ContentType = "application/json" };
             }
             catch (HttpRequestException)
@@ -87,6 +92,25 @@ namespace Front_end.Pages
             }
         }
 
+        /// <summary>Reasignar [JIRA US-04 ESC3][D-21]: responde JSON; el Upgrade pide confirmación con el texto D-32.</summary>
+        public async Task<IActionResult> OnPostReasignarAsync(int id, int numeroHabitacionNueva, bool confirmarUpgrade)
+        {
+            try
+            {
+                await _api.ReasignarAsync(id, numeroHabitacionNueva, confirmarUpgrade);
+                TempData["ReservationSuccess"] = $"Reserva {id} reasignada a la habitación {numeroHabitacionNueva}.";
+                return new JsonResult(new { ok = true });
+            }
+            catch (ApiException ex)
+            {
+                return new JsonResult(new { ok = false, upgrade = !confirmarUpgrade && ex.Message == TextoUpgrade, detail = ex.Message });
+            }
+            catch (HttpRequestException)
+            {
+                return new JsonResult(new { ok = false, upgrade = false, detail = "No se pudo reasignar la habitación." });
+            }
+        }
+
         public async Task<IActionResult> OnPostCheckInAsync(int id, string? documento)
         {
             try
@@ -113,6 +137,8 @@ namespace Front_end.Pages
         {
             try { Reservas = await _api.ListarAsync(); }
             catch (ApiException ex) { TempData["ReservationError"] ??= ex.Message; }
+            try { Tipos = await _habitaciones.TiposAsync(); }
+            catch (ApiException) { /* sin filtro de categoría */ }
         }
 
         private static string Mapear(string campoApi) => campoApi switch

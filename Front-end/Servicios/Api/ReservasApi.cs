@@ -46,11 +46,19 @@ public class ReservasApi
     }
 
     /// <summary>Disponibilidad real de F1 (US-01): devuelve el estado HTTP y el JSON tal cual para que el navegador lo pinte.</summary>
-    public async Task<(int Estado, string Cuerpo)> DisponibilidadAsync(DateTime fechaInicio, DateTime fechaFin, int huespedes)
+    public async Task<(int Estado, string Cuerpo)> DisponibilidadAsync(DateTime fechaInicio, DateTime fechaFin, int huespedes, string? tipo = null)
     {
-        var url = $"api/habitaciones/disponibilidad?fechaInicio={fechaInicio:yyyy-MM-dd}&fechaFin={fechaFin:yyyy-MM-dd}&huespedes={huespedes}";
+        var url = $"api/habitaciones/disponibilidad?fechaInicio={fechaInicio:yyyy-MM-dd}&fechaFin={fechaFin:yyyy-MM-dd}&huespedes={huespedes}"
+            + (string.IsNullOrWhiteSpace(tipo) ? "" : "&tipo=" + Uri.EscapeDataString(tipo));
         var r = await _http.GetAsync(url);
         return ((int)r.StatusCode, await r.Content.ReadAsStringAsync());
+    }
+
+    /// <summary>Reasignación de habitación [D-21]; la API decide el Upgrade (409 con el texto D-32).</summary>
+    public async Task ReasignarAsync(int idReserva, int numeroHabitacionNueva, bool confirmarUpgrade)
+    {
+        var r = await _http.PutAsJsonAsync($"api/reservas/{idReserva}/habitacion", new { numeroHabitacionNueva, confirmarUpgrade });
+        if (!r.IsSuccessStatusCode) throw await ErrorAsync(r);
     }
 
     public async Task CheckInAsync(int idReserva, string? documento)

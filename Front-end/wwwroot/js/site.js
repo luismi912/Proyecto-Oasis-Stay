@@ -113,7 +113,8 @@
             const previa = contenedor.querySelector("input:checked")?.value ?? contenedor.dataset.selected;
             alerta.hidden = true;
             try {
-                const r = await fetch(`?handler=Disponibilidad&fechaInicio=${ini}&fechaFin=${fin}&huespedes=${guests.value}`);
+                const tipo = reservationModal.querySelector("#availability-type")?.value ?? "";
+                const r = await fetch(`?handler=Disponibilidad&fechaInicio=${ini}&fechaFin=${fin}&huespedes=${guests.value}&tipo=${encodeURIComponent(tipo)}`);
                 const j = await r.json();
                 if (turno !== consulta) return; // respuesta vieja
                 if (!r.ok) {
@@ -136,10 +137,59 @@
         };
         inputs.forEach(i => i.addEventListener("change", cargarHabitaciones));
         guests?.addEventListener("change", cargarHabitaciones);
+        reservationModal.querySelector("#availability-type")?.addEventListener("change", cargarHabitaciones);
         cargarHabitaciones();
 
         docInput?.addEventListener("change", autocompletar);
         docType?.addEventListener("change", autocompletar);
+    }
+
+    // Reasignar habitación [JIRA US-04 ESC3][D-21]: solo presentación; la API decide capacidad, estado y Upgrade
+    const reasignarModal = document.getElementById("reasignar-modal");
+    if (reasignarModal) {
+        const lista = reasignarModal.querySelector("#reasignar-lista");
+        const aviso = reasignarModal.querySelector("#reasignar-aviso");
+        const errorBox = reasignarModal.querySelector("#reasignar-error");
+        const form = reasignarModal.querySelector("#reasignar-form");
+        const confirmar = reasignarModal.querySelector("#reasignar-confirmar");
+        const enviar = reasignarModal.querySelector("#reasignar-enviar");
+        const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        const reiniciar = () => { confirmar.value = "false"; aviso.hidden = true; errorBox.hidden = true; enviar.textContent = "✓ Reasignar"; };
+
+        document.querySelectorAll("[data-reasignar]").forEach(boton => boton.addEventListener("click", async () => {
+            const d = boton.dataset;
+            reiniciar();
+            form.querySelector("#reasignar-id").value = d.id;
+            reasignarModal.querySelector("#reasignar-reserva").textContent = "#" + d.id;
+            reasignarModal.querySelector("#reasignar-actual").textContent = "Hab. " + d.habitacion;
+            lista.innerHTML = '<p class="availability-loading">Consultando disponibilidad…</p>';
+            try {
+                const r = await fetch(`?handler=Disponibilidad&fechaInicio=${d.inicio}&fechaFin=${d.fin}&huespedes=${d.huespedes}`);
+                const j = await r.json();
+                if (!r.ok) { lista.innerHTML = ""; errorBox.textContent = j.detail || "No se pudo consultar la disponibilidad."; errorBox.hidden = false; return; }
+                const otras = j.habitaciones.filter(h => String(h.numero) !== String(d.habitacion));
+                if (otras.length === 0) { aviso.textContent = j.mensaje || "No hay habitaciones disponibles."; aviso.hidden = false; }
+                lista.innerHTML = otras.map(h => `<label class="room-option"><input name="numeroHabitacionNueva" type="radio" value="${h.numero}" required /><span><strong>Hab. ${h.numero}</strong><small>${esc(h.tipo)}</small></span><b>$${Math.round(h.precioNoche).toLocaleString("es-CO")}<small>/ noche</small></b></label>`).join("");
+                lista.querySelectorAll("input").forEach(i => i.addEventListener("change", reiniciar));
+            } catch { lista.innerHTML = ""; errorBox.textContent = "No se pudo consultar la disponibilidad."; errorBox.hidden = false; }
+        }));
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            if (!form.querySelector("input[name='numeroHabitacionNueva']:checked")) { errorBox.textContent = "Seleccione la habitación nueva."; errorBox.hidden = false; return; }
+            errorBox.hidden = true;
+            try {
+                const r = await fetch(form.action, { method: "POST", body: new FormData(form) });
+                const j = await r.json();
+                if (j.ok) { window.location.reload(); return; }
+                if (j.upgrade) { // aviso de Upgrade con confirmación [D-32]
+                    aviso.textContent = j.detail; aviso.hidden = false;
+                    confirmar.value = "true"; enviar.textContent = "✓ Confirmar Upgrade";
+                    return;
+                }
+                errorBox.textContent = j.detail; errorBox.hidden = false;
+            } catch { errorBox.textContent = "No se pudo reasignar la habitación."; errorBox.hidden = false; }
+        });
     }
 
     const roomNumber = document.getElementById("room-number");
