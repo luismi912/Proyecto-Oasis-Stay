@@ -820,7 +820,7 @@ h3,
 
 .stay-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr .85fr;
+    grid-template-columns: 1fr 1fr .85fr 1fr;
     gap: 12px;
     margin-bottom: 19px
 }
@@ -1406,3 +1406,8 @@ body.modal-open {
 .availability-alert { background: #fff6e5; color: #8a5a00; border: 1px solid #f0d9a8; border-radius: .5rem; padding: .6rem .8rem; font-size: .85rem; margin-bottom: .6rem; }
 .availability-alert[hidden] { display: none; }
 .availability-loading { font-size: .85rem; color: #6b7a86; }
+#reasignar-form { display: block; padding: 0 1.5rem 1rem; }
+.reasignar-lista { display: grid; gap: .5rem; margin: 1rem 0; max-height: 18rem; overflow-y: auto; }
+.reasignar-aviso { background: #fff6e5; color: #8a5a00; border: 1px solid #f0d9a8; border-radius: .5rem; padding: .6rem .8rem; font-size: .85rem; margin-bottom: .6rem; }
+.reasignar-aviso[hidden], .reasignar-error[hidden] { display: none; }
+.reasignar-error { margin-bottom: .6rem; }

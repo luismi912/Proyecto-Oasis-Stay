@@ -40,6 +40,7 @@
                     <th>Estadía</th>
                     <th>Estado</th>
                     <th>Check-in</th>
+                    <th>Reasignar</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,6 +60,15 @@
                                     <input name="documento" placeholder="Documento" aria-label="Documento del huésped" />
                                     <button class="secondary-button" type="submit">Check-in</button>
                                 </form>
+                            }
+                        </td>
+                        <td>
+                            @if (item.Estado == "Confirmada")
+                            {
+                                <button type="button" class="secondary-button" data-reasignar data-modal-open="reasignar-modal"
+                                        data-id="@item.IdReserva" data-habitacion="@item.Habitacion" data-cliente="@item.Cliente"
+                                        data-inicio="@item.FechaInicio.ToString("yyyy-MM-dd")" data-fin="@item.FechaFin.ToString("yyyy-MM-dd")"
+                                        data-huespedes="@item.Huespedes">Reasignar</button>
                             }
                         </td>
                     </tr>
@@ -100,6 +110,13 @@
                                                             <option value="3">3 huéspedes</option>
                                                             <option value="4">4 huéspedes</option>
                                                         </select></label>
+                                                        <label class="field"><span>Categoría</span><select id="availability-type">
+                                                            <option value="">Todas</option>
+                                                            @foreach (var t in Model.Tipos)
+                                                            {
+                                                                <option value="@t.Nombre">@t.Nombre</option>
+                                                            }
+                                                        </select></label>
                                                     </div>
                                                     <div class="step-title"><b>3</b><span><strong>Selecciona una habitación</strong><small>Solo se muestran
                                                         habitaciones disponibles</small></span></div>
@@ -129,3 +146,23 @@
                                                                                 </form>
                                                                             </section>
                                                                         </div>
+
+<div class="modal-backdrop" id="reasignar-modal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="reasignar-title">
+        <div class="modal-heading">
+            <div><span class="eyebrow">Reasignar habitación</span>
+                <h2 id="reasignar-title">Reserva <span id="reasignar-reserva"></span></h2>
+                <p>Habitaciones disponibles para las mismas fechas y huéspedes. Actual: <strong id="reasignar-actual"></strong></p>
+            </div>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+        <form method="post" asp-page-handler="Reasignar" class="modal-form" id="reasignar-form">
+            <input type="hidden" name="id" id="reasignar-id" />
+            <input type="hidden" name="confirmarUpgrade" id="reasignar-confirmar" value="false" />
+            <div class="toast error reasignar-error" id="reasignar-error" role="alert" hidden></div>
+            <div class="reasignar-aviso" id="reasignar-aviso" role="alert" hidden></div>
+            <div class="reasignar-lista room-options" id="reasignar-lista"><p class="availability-loading">Consultando disponibilidad…</p></div>
+            <div class="modal-actions"><button type="button" class="secondary-button" data-modal-close>Cancelar</button><button class="primary-button" type="submit" id="reasignar-enviar">✓ Reasignar</button></div>
+        </form>
+    </section>
+</div>
