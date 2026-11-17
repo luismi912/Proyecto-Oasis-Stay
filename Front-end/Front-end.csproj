@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Front_end</RootNamespace>
+    <AssemblyName>OasisStay.UI</AssemblyName>
   </PropertyGroup>
 
 </Project>

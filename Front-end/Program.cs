@@ -1,25 +1,45 @@
+using Front_end.Servicios.Api;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<JwtDelegatingHandler>();
+builder.Services.AddHttpClient<OasisApiClient>(c =>
+        c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
+    .AddHttpMessageHandler<JwtDelegatingHandler>();
+
+// El JWT de la API viaja en la cookie HttpOnly; sin sesión o con token vencido se vuelve al login [D-02].
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(o =>
+    {
+        o.Cookie.Name = "OasisStay.Sesion";
+        o.Cookie.HttpOnly = true;
+        o.LoginPath = "/";
+        o.Events.OnRedirectToAccessDenied = ctx =>
+        {
+            // Rol sin permiso a la pantalla: se vuelve a su inicio con aviso [RNF-06][E2 §6].
+            var inicio = ctx.HttpContext.User.IsInRole("AmaDeLlaves") ? "/Ventanas/Habitaciones" : "/Ventanas/PanelControl";
+            ctx.Response.Redirect(inicio + "?denegado=1");
+            return Task.CompletedTask;
+        };
+    });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
-app.UseRouting();
-
-app.UseAuthorization();
-
 app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
