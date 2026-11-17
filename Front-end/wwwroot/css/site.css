@@ -1394,3 +1394,15 @@ body.modal-open {
         padding: 14px 18px
     }
 }
+/* Reservas: campos con error de la API (rojo solo en los erróneos) y formulario de check-in */
+.field.has-error input, .field.has-error select { border-color: #c0392b; background: #fdf1ef; }
+.field-error { display: block; color: #c0392b; font-size: .75rem; min-height: 0; }
+.field-error:empty { display: none; }
+.field.privacy span { display: flex; gap: .5rem; align-items: center; }
+.field.privacy input { width: auto; }
+.checkin-form { display: flex; gap: .4rem; align-items: center; }
+.checkin-form input { width: 7.5rem; padding: .35rem .5rem; border: 1px solid #d6dbe0; border-radius: .5rem; }
+.checkin-form .secondary-button { padding: .35rem .75rem; }
+.availability-alert { background: #fff6e5; color: #8a5a00; border: 1px solid #f0d9a8; border-radius: .5rem; padding: .6rem .8rem; font-size: .85rem; margin-bottom: .6rem; }
+.availability-alert[hidden] { display: none; }
+.availability-loading { font-size: .85rem; color: #6b7a86; }
