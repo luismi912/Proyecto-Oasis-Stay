@@ -11,8 +11,24 @@ public class Cliente
     public string Correo { get; set; } = "";
     public int? Edad { get; set; }
 
-    public void RegistrarDatos() => throw new NotImplementedException("F2");
-    public void ActualizarDatos() => throw new NotImplementedException("F2");
+    /// <summary>Valida los datos digitados antes de guardarlos [JIRA US-03 RN1][JIRA US-03 RN2].</summary>
+    public void RegistrarDatos() => ValidarDatos();
+
+    /// <summary>Mismas reglas al actualizar los datos de un cliente existente [JIRA US-03 RN3].</summary>
+    public void ActualizarDatos() => ValidarDatos();
+
+    private void ValidarDatos()
+    {
+        var errores = new Dictionary<string, string[]>();
+        if (!Enum.IsDefined(TipoDocumento)) errores["tipoDocumento"] = new[] { "El tipo de documento es obligatorio (CC, CE o Pasaporte)" };
+        if (string.IsNullOrWhiteSpace(Documento)) errores["documento"] = new[] { "El número de documento es obligatorio" };
+        if (string.IsNullOrWhiteSpace(Nombre)) errores["nombre"] = new[] { "Los nombres completos son obligatorios" };
+        if (string.IsNullOrWhiteSpace(Telefono)) errores["telefono"] = new[] { "El teléfono es obligatorio" };
+        else if (!ReglasHuesped.TelefonoValido(Telefono)) errores["telefono"] = new[] { "El teléfono solo admite dígitos, espacios, + y -" };
+        if (string.IsNullOrWhiteSpace(Correo)) errores["correo"] = new[] { "El correo electrónico es obligatorio" };
+        else if (!ReglasHuesped.CorreoValido(Correo)) errores["correo"] = new[] { "El correo electrónico no tiene un formato válido" };
+        if (errores.Count > 0) throw new ValidacionDominioException("Hay campos con formato inválido.", errores);
+    }
 }
 
 /// <summary>Reserva [DC][DE#4]. Cuerpos en F2/F3/F4.</summary>
@@ -21,6 +37,8 @@ public class Reserva
     public int IdReserva { get; set; }
     public DateTime FechaInicio { get; set; }
     public DateTime FechaFin { get; set; }
+    /// <summary>Número de ocupantes [JIRA US-03 historia][JIRA US-04 RN1]; permite validar RN-05 al reasignar.</summary>
+    public int Huespedes { get; set; }
     public EstadoReserva Estado { get; set; } = EstadoReserva.Confirmada;
     public int IdCliente { get; set; }
     public Cliente? Cliente { get; set; }
@@ -31,7 +49,24 @@ public class Reserva
 
     public decimal CalcularTotal() => throw new NotImplementedException("F3");
     public void CancelarReserva() => throw new NotImplementedException("F2");
-    public void HacerCheckIn() => throw new NotImplementedException("F4");
+    /// <summary>Confirmada → EnCurso [DE#4]; las guardas de documento y fecha están en la sobrecarga [D-31].</summary>
+    public void HacerCheckIn()
+    {
+        if (Estado != EstadoReserva.Confirmada) throw new ConflictoDominioException(MensajesReserva.ReservaNoConfirmada);
+        Estado = EstadoReserva.EnCurso;
+    }
+
+    /// <summary>Check-in con guardas "FechaInicio alcanzada y documento verificado" [DE#4][DE#1][D-31].</summary>
+    public ResultadoOperacion HacerCheckIn(string? documentoVerificado, DateTime ahora)
+    {
+        if (Estado != EstadoReserva.Confirmada) return ResultadoOperacion.Rechazada(MensajesReserva.ReservaNoConfirmada);
+        if (string.IsNullOrWhiteSpace(documentoVerificado) || Cliente == null
+            || !string.Equals(documentoVerificado.Trim(), Cliente.Documento.Trim(), StringComparison.OrdinalIgnoreCase))
+            return ResultadoOperacion.Rechazada(MensajesReserva.DocumentoNoVerificado);
+        if (ahora.Date < FechaInicio.Date) return ResultadoOperacion.Rechazada(MensajesReserva.CheckInAntesDeLlegada);
+        HacerCheckIn();
+        return ResultadoOperacion.Exitosa();
+    }
     public void HacerCheckOut() => throw new NotImplementedException("F4");
 }
 
@@ -170,11 +205,22 @@ public class Notificacion
     public string Mensaje { get; set; } = "";
 }
 
-/// <summary>Solicitud de reserva [GoF Chain][CTR §4]; la cadena y TieneReservaSolapada son de F2.</summary>
+/// <summary>Solicitud de reserva [GoF Chain][CTR §4].</summary>
 public class SolicitudReserva
 {
     public DateTime CheckIn { get; set; }
     public DateTime CheckOut { get; set; }
     public int Huespedes { get; set; }
     public Habitacion? Habitacion { get; set; }
+    /// <summary>Huésped titular, guardado o actualizado al registrar [JIRA US-03 RN3][D-09].</summary>
+    public Cliente? Cliente { get; set; }
+    /// <summary>Usuario que registra, para la bitácora [JIRA US-07 RN3][D-23].</summary>
+    public string Usuario { get; set; } = "";
+    /// <summary>Reservas de la habitación en el rango, cargadas por GestionReservas [CTR §5].</summary>
+    public IReadOnlyList<Reserva> ReservasExistentes { get; set; } = Array.Empty<Reserva>();
+
+    /// <summary>RN-01: hay una reserva activa (Confirmada o EnCurso) que se cruza; salida y llegada el mismo día no se cruzan [E1 RN-01].</summary>
+    public bool TieneReservaSolapada() => ReservasExistentes.Any(r =>
+        (r.Estado == EstadoReserva.Confirmada || r.Estado == EstadoReserva.EnCurso)
+        && r.FechaInicio < CheckOut && r.FechaFin > CheckIn);
 }

@@ -29,7 +29,11 @@ public class RepositorioHabitaciones : IRepositorioHabitaciones
         => _db.Habitaciones.Include(h => h.Tipo).OrderBy(h => h.NumeroHabitacion).ToList();
 
     public Habitacion? BuscarPorNumero(int numero)
-        => _db.Habitaciones.Include(h => h.Tipo).FirstOrDefault(h => h.NumeroHabitacion == numero);
+    {
+        var h = _db.Habitaciones.Include(h => h.Tipo).FirstOrDefault(h => h.NumeroHabitacion == numero);
+        h?.ReconstruirEstado(); // estado de comportamiento real desde el texto persistido [E2 §3 State]
+        return h;
+    }
 
     public void Guardar(Habitacion habitacion)
     {
@@ -58,7 +62,27 @@ public class RepositorioReservas : IRepositorioReservas
     public RepositorioReservas(OasisStayDbContext db) => _db = db;
 
     public IReadOnlyList<Reserva> BuscarPorHabitacionYFechas(Habitacion habitacion, DateTime fechaInicio, DateTime fechaFin)
-        => throw new NotImplementedException("F2");
+        => _db.Reservas
+            .Where(r => r.NumeroHabitacion == habitacion.NumeroHabitacion
+                && (r.Estado == EstadoReserva.Confirmada || r.Estado == EstadoReserva.EnCurso)
+                && r.FechaInicio < fechaFin && r.FechaFin > fechaInicio)
+            .ToList();
+
+    public Reserva? BuscarPorId(int idReserva)
+        => _db.Reservas.Include(r => r.Cliente).Include(r => r.Habitacion).ThenInclude(h => h!.Tipo)
+            .FirstOrDefault(r => r.IdReserva == idReserva);
+
+    public IReadOnlyList<Reserva> Listar(EstadoReserva? estado, string? texto)
+    {
+        var q = _db.Reservas.Include(r => r.Cliente).Include(r => r.Habitacion).AsQueryable();
+        if (estado.HasValue) q = q.Where(r => r.Estado == estado.Value);
+        if (!string.IsNullOrWhiteSpace(texto))
+        {
+            var t = texto.Trim();
+            q = q.Where(r => r.Cliente!.Nombre.Contains(t) || r.IdReserva.ToString() == t);
+        }
+        return q.OrderByDescending(r => r.FechaInicio).ThenByDescending(r => r.IdReserva).ToList();
+    }
 
     public void Guardar(Reserva reserva)
     {
@@ -75,6 +99,9 @@ public class RepositorioHuespedes : IRepositorioHuespedes
 
     public Cliente? BuscarPorDocumento(string documento)
         => _db.Clientes.FirstOrDefault(c => c.Documento == documento);
+
+    public Cliente? BuscarPorDocumento(TipoDocumento tipo, string documento)
+        => _db.Clientes.FirstOrDefault(c => c.TipoDocumento == tipo && c.Documento == documento);
 
     public void Guardar(Cliente cliente)
     {

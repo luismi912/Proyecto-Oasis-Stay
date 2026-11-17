@@ -5,6 +5,10 @@
     ViewData["Subtitle"] = "Gestiona las próximas estadías";
 }
 
+@functions {
+    private string Err(string campo) => ViewData.ModelState.TryGetValue(campo, out var e) && e.Errors.Count > 0 ? " has-error" : "";
+    private string Msg(string campo) => ViewData.ModelState.TryGetValue(campo, out var e) && e.Errors.Count > 0 ? e.Errors[0].ErrorMessage : "";
+}
 @if (TempData["ReservationSuccess"] is string reservationSuccess)
 {
     <div class="toast success">✓ @reservationSuccess</div>
@@ -15,7 +19,7 @@
 }
 
 <div class="content-banner">
-    <span><strong>8 reservas activas para este mes</strong><small>Revisa llegadas, pagos y disponibilidad desde una sola
+    <span><strong>@Model.Reservas.Count(r => r.Estado == "Confirmada" || r.Estado == "EnCurso") reservas activas</strong><small>Revisa llegadas, pagos y disponibilidad desde una sola
         vista.</small></span>
         <a class="primary-button" href="#nueva-reserva" data-modal-open="reservation-modal">＋ Nueva reserva</a>
     </div>
@@ -25,15 +29,7 @@
                 <h2>Próximas reservas</h2>
                 <p>Consulta el estado de cada estadía.</p>
             </div>
-            <span class="eyebrow">Junio 2026</span>
-        </div>
-        <div class="filters">
-            <input placeholder="⌕  Buscar cliente o reserva..." />
-            <select>
-                <option>Todos los estados</option>
-                <option>Pagado</option>
-                <option>Pendiente</option>
-            </select>
+            <span class="eyebrow">Próximas estadías</span>
         </div>
         <table class="data-table">
             <thead>
@@ -42,29 +38,36 @@
                     <th>Cliente</th>
                     <th>Habitación</th>
                     <th>Estadía</th>
-                    <th>Pago</th>
-                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Check-in</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in new[] { ("OS-24058", "Valentina Ríos", "201", "12 Jun — 15 Jun", "Pagado",
-     "$1.142.400"), ("OS-24057", "Santiago Vélez", "103", "11 Jun — 14 Jun", "Pendiente", "$428.400"),
-            ("OS-24056", "Laura Castillo", "302", "10 Jun — 13 Jun", "Pagado", "$660.450"), ("OS-24055", "Tomás Restrepo", "204", "09 Jun — 11 Jun", "Reembolsado", "$440.300") })
+                @foreach (var item in Model.Reservas)
                 {
                     <tr>
-                        <td><strong>@item.Item1</strong></td>
-                        <td>@item.Item2</td>
-                        <td>Hab. @item.Item3</td>
-                        <td>@item.Item4</td>
-                        <td><span class="payment @(item.Item5 == "Pendiente" ? "pending" : "")">@item.Item5</span></td>
-                        <td><strong>@item.Item6</strong></td>
+                        <td><strong>#@item.IdReserva</strong></td>
+                        <td>@item.Cliente</td>
+                        <td>Hab. @item.Habitacion</td>
+                        <td>@item.FechaInicio.ToString("dd MMM") — @item.FechaFin.ToString("dd MMM")</td>
+                        <td><span class="payment @(item.Estado == "Confirmada" ? "pending" : "")">@item.Estado</span></td>
+                        <td>
+                            @if (item.Estado == "Confirmada")
+                            {
+                                <form method="post" asp-page-handler="CheckIn" class="checkin-form">
+                                    <input type="hidden" name="id" value="@item.IdReserva" />
+                                    <input name="documento" placeholder="Documento" aria-label="Documento del huésped" />
+                                    <button class="secondary-button" type="submit">Check-in</button>
+                                </form>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
     </section>
 
-    <div class="modal-backdrop" id="reservation-modal" aria-hidden="true">
+    <div class="modal-backdrop" id="reservation-modal" aria-hidden="true" data-open-on-load="@(Model.ReabrirModal ? "true" : "false")">
         <section class="modal reservation-modal" role="dialog" aria-modal="true" aria-labelledby="reservation-title">
             <div class="modal-heading">
                 <div><span class="eyebrow">Nueva reserva</span>
@@ -73,50 +76,35 @@
                 </div>
                 <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
             </div>
-            <form method="post" asp-page-handler="CreateReservation" class="modal-form">
+            <form method="post" asp-page-handler="CreateReservation" class="modal-form" novalidate>
                 <div class="modal-main">
                     <div class="step-title"><b>1</b><span><strong>Datos del huésped</strong><small>Información principal de
                         contacto</small></span></div>
                         <div class="form-grid">
-                            <label class="field"><span>Nombre completo</span><input asp-for="Reservation.GuestName"
-                                                                                        placeholder="Ej. Valentina Ríos" required /></label>
-                                <label class="field"><span>Documento</span><input asp-for="Reservation.Document"
-                                                                                      placeholder="CC o Pasaporte" required /></label>
-                                    <label class="field"><span>Email</span><input asp-for="Reservation.Email" type="email"
-                                                                                      placeholder="nombre@email.com" required /></label>
-                                        <label class="field"><span>Teléfono</span><input asp-for="Reservation.Phone"
-                                                                                             placeholder="+57 300 000 0000" required /></label>
-                                        </div>
-                                        <div class="step-title"><b>2</b><span><strong>Fechas de estadía</strong><small>Define llegada, salida y
+                                <label class="field@(Err("Reservation.GuestName"))"><span>Nombre completo</span><input asp-for="Reservation.GuestName" placeholder="Ej. Valentina Ríos" required /><small class="field-error">@Msg("Reservation.GuestName")</small></label>
+                                <label class="field@(Err("Reservation.DocumentType"))"><span>Tipo de documento</span><select asp-for="Reservation.DocumentType"><option value="CC">CC</option><option value="CE">CE</option><option value="Pasaporte">Pasaporte</option></select><small class="field-error">@Msg("Reservation.DocumentType")</small></label>
+                                <label class="field@(Err("Reservation.Document"))"><span>Documento</span><input asp-for="Reservation.Document" placeholder="Número de documento" required autocomplete="off" /><small class="field-error">@Msg("Reservation.Document")</small></label>
+                                <label class="field@(Err("Reservation.Email"))"><span>Email</span><input asp-for="Reservation.Email" type="email" placeholder="nombre@email.com" required /><small class="field-error">@Msg("Reservation.Email")</small></label>
+                                <label class="field@(Err("Reservation.Phone"))"><span>Teléfono</span><input asp-for="Reservation.Phone" placeholder="+57 300 000 0000" required /><small class="field-error">@Msg("Reservation.Phone")</small></label>
+                            </div>
+                            <div class="step-title"><b>2</b><span><strong>Fechas de estadía</strong><small>Define llegada, salida y
                                             ocupación</small></span></div>
                                             <div class="stay-grid">
                                                 <label class="field"><span>Check-in</span><input asp-for="Reservation.CheckIn" type="date"
-                                                                                                     value="2026-06-12" required /></label>
+                                                                                                     value="@Model.Reservation.CheckIn.ToString("yyyy-MM-dd")" required /></label>
                                                     <label class="field"><span>Check-out</span><input asp-for="Reservation.CheckOut" type="date"
-                                                                                                          value="2026-06-15" required /></label>
+                                                                                                          value="@Model.Reservation.CheckOut.ToString("yyyy-MM-dd")" required /></label>
                                                         <label class="field"><span>Huéspedes</span><select asp-for="Reservation.Guests">
                                                             <option value="1">1 huésped</option>
-                                                            <option value="2" selected>2 huéspedes</option>
+                                                            <option value="2">2 huéspedes</option>
                                                             <option value="3">3 huéspedes</option>
                                                             <option value="4">4 huéspedes</option>
                                                         </select></label>
                                                     </div>
                                                     <div class="step-title"><b>3</b><span><strong>Selecciona una habitación</strong><small>Solo se muestran
                                                         habitaciones disponibles</small></span></div>
-                                                        <div class="room-options">
-                                                            <label class="room-option selected"><input asp-for="Reservation.RoomNumber" type="radio" value="102"
-                                                                                                           checked data-room-price="185000" data-room-type="Doble Clásica" /><span><strong>Hab.
-                                                                102</strong><small>Doble Clásica</small></span><b>$185.000<small>/
-                                                                noche</small></b></label>
-                                                                <label class="room-option"><input asp-for="Reservation.RoomNumber" type="radio" value="201"
-                                                                                                      data-room-price="320000" data-room-type="Suite Ejecutiva" /><span><strong>Hab.
-                                                                    201</strong><small>Suite Ejecutiva</small></span><b>$320.000<small>/
-                                                                    noche</small></b></label>
-                                                                    <label class="room-option"><input asp-for="Reservation.RoomNumber" type="radio" value="203"
-                                                                                                          data-room-price="120000" data-room-type="Individual" /><span><strong>Hab.
-                                                                        203</strong><small>Individual</small></span><b>$120.000<small>/
-                                                                        noche</small></b></label>
-                                                                    </div>
+                                                        <div class="availability-alert" id="availability-alert" role="alert" hidden></div>
+                                                        <div class="room-options" id="room-options" data-selected="@Model.Reservation.RoomNumber"><p class="availability-loading">Consultando disponibilidad…</p></div>
                                                                 </div>
                                                                 <aside class="reservation-summary">
                                                                     <span class="eyebrow">Resumen</span>
@@ -134,6 +122,7 @@
                                                                                     id="summary-total">$660.450 <small>COP</small></b></div>
                                                                                     <div class="summary-note">♢ Cancelación gratuita hasta 24 horas antes del check-in.</div>
                                                                                 </aside>
+                                                                                <label class="field privacy@(Err("Reservation.AcceptPrivacy"))"><span><input asp-for="Reservation.AcceptPrivacy" type="checkbox" /> Acepto la política de privacidad y el tratamiento de datos personales</span><small class="field-error">@Msg("Reservation.AcceptPrivacy")</small></label>
                                                                                 <div class="modal-actions"><button type="button" class="secondary-button"
                                                                                                                        data-modal-close>Cancelar</button><button class="primary-button" type="submit">✓ Confirmar
                                                                                     reserva</button></div>

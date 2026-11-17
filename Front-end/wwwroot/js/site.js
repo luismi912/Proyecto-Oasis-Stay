@@ -79,6 +79,67 @@
         };
         reservationModal.querySelectorAll("input, select").forEach(input => input.addEventListener("change", updateSummary));
         updateSummary();
+
+        // Reabre el modal con lo digitado cuando la API rechazó la reserva [JIRA US-03 ESC3]
+        if (reservationModal.dataset.openOnLoad === "true") {
+            reservationModal.classList.add("is-open");
+            reservationModal.setAttribute("aria-hidden", "false");
+            document.body.classList.add("modal-open");
+        }
+
+        // Autocompletado por documento: solo presentación, la búsqueda la hace la API [JIRA US-03 ESC2]
+        const docInput = reservationModal.querySelector("input[name='Reservation.Document']");
+        const docType = reservationModal.querySelector("select[name='Reservation.DocumentType']");
+        const autocompletar = async () => {
+            const documento = docInput?.value.trim();
+            if (!documento) return;
+            try {
+                const r = await fetch(`?handler=Huesped&tipoDocumento=${encodeURIComponent(docType.value)}&documento=${encodeURIComponent(documento)}`);
+                if (!r.ok) return;
+                const h = await r.json();
+                const poner = (nombre, valor) => { const el = reservationModal.querySelector(`[name='Reservation.${nombre}']`); if (el && valor) el.value = valor; };
+                poner("GuestName", h.nombre); poner("Phone", h.telefono); poner("Email", h.correo);
+            } catch { /* sin conexión: el recepcionista digita los datos */ }
+        };
+        // Paso 3: habitaciones reales desde la API de disponibilidad (solo presentación) [JIRA US-01]
+        const contenedor = reservationModal.querySelector("#room-options");
+        const alerta = reservationModal.querySelector("#availability-alert");
+        const escapar = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        let consulta = 0;
+        const cargarHabitaciones = async () => {
+            const turno = ++consulta;
+            const ini = inputs[0]?.value, fin = inputs[1]?.value;
+            if (!ini || !fin) return;
+            const previa = contenedor.querySelector("input:checked")?.value ?? contenedor.dataset.selected;
+            alerta.hidden = true;
+            try {
+                const r = await fetch(`?handler=Disponibilidad&fechaInicio=${ini}&fechaFin=${fin}&huespedes=${guests.value}`);
+                const j = await r.json();
+                if (turno !== consulta) return; // respuesta vieja
+                if (!r.ok) {
+                    contenedor.innerHTML = "";
+                    alerta.textContent = j.detail || "No se pudo consultar la disponibilidad.";
+                    alerta.hidden = false;
+                    updateSummary();
+                    return;
+                }
+                if (j.habitaciones.length === 0) {
+                    const alt = j.alternativas.length ? " Alternativas con cupo: " + j.alternativas.map(a => `${a.nombre} ($${Math.round(a.precioBase).toLocaleString("es-CO")}/noche)`).join(", ") + "." : "";
+                    alerta.textContent = (j.mensaje || "") + alt;
+                    alerta.hidden = false;
+                }
+                const hay = j.habitaciones.some(h => String(h.numero) === String(previa));
+                contenedor.innerHTML = j.habitaciones.map((h, i) => `<label class="room-option"><input name="Reservation.RoomNumber" type="radio" value="${h.numero}" ${(hay ? String(h.numero) === String(previa) : i === 0) ? "checked" : ""} data-room-price="${h.precioNoche}" data-room-type="${escapar(h.tipo)}" /><span><strong>Hab. ${h.numero}</strong><small>${escapar(h.tipo)}</small></span><b>$${Math.round(h.precioNoche).toLocaleString("es-CO")}<small>/ noche</small></b></label>`).join("");
+                contenedor.querySelectorAll("input").forEach(i => i.addEventListener("change", updateSummary));
+                updateSummary();
+            } catch { contenedor.innerHTML = ""; }
+        };
+        inputs.forEach(i => i.addEventListener("change", cargarHabitaciones));
+        guests?.addEventListener("change", cargarHabitaciones);
+        cargarHabitaciones();
+
+        docInput?.addEventListener("change", autocompletar);
+        docType?.addEventListener("change", autocompletar);
     }
 
     const roomNumber = document.getElementById("room-number");
