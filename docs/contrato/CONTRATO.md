@@ -31,7 +31,7 @@ secuencia · `DC` diagrama de clases · `CMP` diagrama de componentes · `D-nn` 
 | `Reserva` | `IdReserva`, `FechaInicio`, `FechaFin`, `Estado`, `Huespedes` (D-40) | `CalcularTotal()`, `CancelarReserva()`, `HacerCheckIn()`, `HacerCheckOut()` | DC, DE#4 |
 | `TipoHabitacion` | `IdTipo`, `Nombre`, `CapacidadMax`, `PrecioBase`, `Descripcion` | `CalcularPrecioNoche()` | DC |
 | `Habitacion` | `NumeroHabitacion`, `Estado` (texto persistido), `estadoActual: IEstadoHabitacion`, `Piso` (1-3), `MotivoMantenimiento` (D-28) | `Reservar()`, `HacerCheckIn()`, `HacerCheckOut()`, `MarcarDisponible()`, `MarcarMantenimiento(motivo)`, `CambiarEstado(nuevo)`, `PuedeReservarse()` | DC, DE#1, GoF, D-28 |
-| `Servicio` (consumo) | `IdServicio`, `Nombre`, `Precio`, `Descripcion` | `AplicarServicio(Reserva)` | DC |
+| `Servicio` (consumo) | `IdServicio`, `Nombre`, `Precio`, `Descripcion`; el consumo de una reserva es `ConsumoReserva` (reserva, servicio, cantidad, monto) (D-43) | `AplicarServicio(Reserva)` | DC |
 | `Factura` | `IdFactura`, `FechaEmision`, `ImpuestoIVA`, `ValorTotal`; folio único consecutivo | `GenerarFactura()`, `CalcularTotal()` | DC, E1 RF-06 |
 | `DetalleFactura` | `IdDetalle`, `Concepto`, `Cantidad`, `ValorUnitario`, `SubTotal` | `CalcularSubtotal()` | DC |
 | `Pago` | `IdPago`, `FechaPago`, `Monto`, `MetodoPago`, `TipoTarjeta`, `NumeroAutorizacion`, `ReferenciaBancaria`, `Vuelto`; asociado a `Reserva` y a `Factura` (D-33) | `RegistrarPago()`, `ValidarPago()` | DC, D-33 |
