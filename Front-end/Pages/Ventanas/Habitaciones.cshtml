@@ -3,7 +3,31 @@
 @{
     ViewData["Title"] = "Habitaciones";
     ViewData["Subtitle"] = "Inventario y estado operativo";
+
+    // Etiquetas del Figma por estado del contrato y su clase de color [JIRA US-02 ESC1][D-24]
+    static (string Label, string Css) Visual(string estado) => estado switch
+    {
+        "Disponible" => ("Disponible", "available"),
+        "Ocupada" => ("Ocupado", "occupied"),
+        "Reservada" => ("Reservado", "reserved"),
+        "EnLimpieza" => ("En limpieza", "cleaning"),
+        "Mantenimiento" => ("Mantenimiento", "maintenance"),
+        _ => (estado, "available")
+    };
+    var opcionesEstado = new[] { ("Disponible", "Disponible"), ("Reservada", "Reservado"), ("Ocupada", "Ocupado"), ("EnLimpieza", "En limpieza"), ("Mantenimiento", "Mantenimiento") };
 }
+
+<style>
+    .room-card.maintenance { border-top-color: #8a8f98 }
+    .status.maintenance { background: #eceef1; color: #5b616b }
+    .room-price-row { display: flex; justify-content: space-between; align-items: center }
+    .room-menu summary { list-style: none; cursor: pointer }
+    .room-menu summary::-webkit-details-marker { display: none }
+    .room-arrow { font-size: 16px; padding: 0 6px; color: var(--muted) }
+    .room-menu[open] .room-arrow { color: var(--brand) }
+    .room-menu-body { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 6px; font-size: 11px }
+    .room-menu-body .field-control, .room-menu-body textarea { width: 100%; font-size: 11px }
+</style>
 
 @if (TempData["RoomSuccess"] is string roomSuccess)
 {
@@ -17,84 +41,121 @@
 <div class="content-banner">
     <span><strong>Gestión de habitaciones</strong><small>Supervisa disponibilidad, limpieza y
         mantenimiento.</small></span>
+    @if (Model.CanCreate)
+    {
         <a class="primary-button" href="#crear" data-modal-open="room-modal">＋ Crear habitación</a>
-    </div>
-    <section class="panel">
-        <div class="panel-header">
-            <div>
-                <h2>Inventario operativo</h2>
-                <p>48 habitaciones distribuidas en 3 pisos.</p>
-            </div><select class="field-control" style="width:180px">
-            <option>Todos los estados</option>
-            <option>Disponible</option>
-            <option>Ocupado</option>
-            <option>En limpieza</option>
-        </select>
+    }
+</div>
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Inventario operativo</h2>
+            <p>@Model.TotalRooms habitaciones distribuidas en @Model.TotalFloors pisos.</p>
+        </div>
+        <form method="get">
+            <select class="field-control" style="width:180px" name="Estado" onchange="this.form.submit()">
+                <option value="">Todos los estados</option>
+                @foreach (var (valor, etiqueta) in opcionesEstado)
+                {
+                    <option value="@valor" selected="@(Model.Estado == valor)">@etiqueta</option>
+                }
+            </select>
+        </form>
     </div>
     <div class="room-grid">
-        @foreach (var room in new[] { ("101", "Suite Ejecutiva", "Ocupado", "occupied", "$320.000"), ("102", "Doble Clásica", "Disponible", "available", "$185.000"), ("103", "Individual", "Reservado", "reserved", "$120.000"),
-        ("104", "Doble Clásica", "En limpieza", "cleaning", "$185.000"), ("201", "Suite Ejecutiva", "Disponible",
-    "available", "$320.000"), ("202", "Doble Clásica", "Ocupado", "occupied", "$185.000"), ("203", "Individual",
-  "Disponible", "available", "$120.000"), ("204", "Doble Clásica", "Reservado", "reserved", "$185.000"), ("301",
-       "Suite Ejecutiva", "Reservado", "reserved", "$320.000"), ("302", "Doble Clásica", "Ocupado", "occupied",
-     "$185.000"), ("303", "Individual", "En limpieza", "cleaning", "$120.000"), ("304", "Suite Ejecutiva",
-   "Disponible", "available", "$320.000") })
+        @foreach (var room in Model.Rooms)
         {
-            <article class="room-card @room.Item4">
-                <div class="room-top"><span><small>Habitación</small><strong>@room.Item1</strong></span><span
-                    class="status @room.Item4">@room.Item3</span></div>
-                    <div class="room-type">▱ @room.Item2</div>
-                    <div class="room-price">@room.Item5 <small>COP / noche</small></div>
-                </article>
-            }
-            @if (TempData["CreatedRoomNumber"] is string createdNumber)
-            {
-                <article class="room-card available new-room">
-                    <div class="room-top"><span><small>Nueva habitación</small><strong>@createdNumber</strong></span><span
-                        class="status available">Disponible</span></div>
-                        <div class="room-type">▱ @TempData["CreatedRoomType"]</div>
-                        <div class="room-price">@TempData["CreatedRoomPrice"] <small>COP / noche</small></div>
-                    </article>
-                }
-            </div>
-        </section>
+            var v = Visual(room.Estado);
+            <article class="room-card @v.Css">
+                <div class="room-top"><span><small>Habitación</small><strong>@room.Numero</strong></span><span
+                    class="status @v.Css">@v.Label</span></div>
+                <div class="room-type">▱ @room.Tipo</div>
+                <details class="room-menu">
+                    <summary class="room-price-row" aria-label="Cambiar estado de la habitación @room.Numero">
+                        <span class="room-price">$@room.PrecioNoche.ToString("N0", new System.Globalization.CultureInfo("es-CO")) <small>COP / noche</small></span>
+                        <span class="room-arrow">▾</span>
+                    </summary>
+                    <form method="post" asp-page-handler="ChangeState" asp-route-estado="@Model.Estado" class="room-menu-body">
+                        <span>Piso @room.Piso · @room.Tipo</span>
+                        @if (room.Estado == "Mantenimiento" && !string.IsNullOrWhiteSpace(room.MotivoMantenimiento))
+                        {
+                            <span>Motivo: @room.MotivoMantenimiento</span>
+                        }
+                        <input type="hidden" name="State.Number" value="@room.Numero" />
+                        <select class="field-control" name="State.NewState" aria-label="Nuevo estado">
+                            @foreach (var (valor, etiqueta) in opcionesEstado)
+                            {
+                                <option value="@valor" selected="@(room.Estado == valor)">@etiqueta</option>
+                            }
+                        </select>
+                        <textarea class="field-control" name="State.Reason" rows="2" placeholder="Motivo (obligatorio para Mantenimiento, mínimo 10 caracteres)"></textarea>
+                        <button class="primary-button" type="submit">Aceptar</button>
+                    </form>
+                </details>
+            </article>
+        }
+    </div>
+</section>
 
-        <div class="modal-backdrop" id="room-modal" aria-hidden="true">
-            <section class="modal room-modal" role="dialog" aria-modal="true" aria-labelledby="room-title">
-                <div class="modal-heading">
-                    <div><span class="eyebrow">Inventario hotelero</span>
-                        <h2 id="room-title">Crear habitación</h2>
-                        <p>Agrega una nueva unidad a la grilla operativa del hotel.</p>
-                    </div><button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
-                </div>
-                <form method="post" asp-page-handler="CreateRoom" class="room-form">
-                    <div class="room-preview"><span class="floor-tag">PISO 4</span>
-                        <div class="preview-icon">▱</div><span class="eyebrow">Nueva habitación</span><strong
-                        id="preview-number">401</strong><small id="preview-type">Doble Clásica</small><span
+@if (Model.CanCreate)
+{
+    <div class="modal-backdrop" id="room-modal" aria-hidden="true">
+        <section class="modal room-modal" role="dialog" aria-modal="true" aria-labelledby="room-title">
+            <div class="modal-heading">
+                <div><span class="eyebrow">Inventario hotelero</span>
+                    <h2 id="room-title">Crear habitación</h2>
+                    <p>Agrega una nueva unidad a la grilla operativa del hotel.</p>
+                </div><button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+            </div>
+            <form method="post" asp-page-handler="CreateRoom" class="room-form">
+                <div class="room-preview"><span class="floor-tag" id="preview-floor">PISO 1</span>
+                    <div class="preview-icon">▱</div><span class="eyebrow">Nueva habitación</span><strong
+                        id="preview-number">101</strong><small id="preview-type">@(Model.RoomTypes.FirstOrDefault()?.Nombre)</small><span
                         class="status available">Disponible</span>
-                    </div>
-                    <div class="room-fields">
-                        <label class="field"><span>Número de habitación</span><input asp-for="Room.Number" id="room-number"
-                                                                                         value="401" required /></label>
-                            <label class="field"><span>Tipo de habitación</span><select asp-for="Room.Type" id="room-type">
-                                <option>Doble Clásica</option>
-                                <option>Suite Ejecutiva</option>
-                                <option>Individual</option>
-                            </select></label>
-                            <label class="field"><span>Piso</span><select asp-for="Room.Floor">
-                                <option>Piso 1</option>
-                                <option>Piso 2</option>
-                                <option>Piso 3</option>
-                                <option selected>Piso 4</option>
-                            </select></label>
-                            <label class="field"><span>Precio base por noche</span>
-                                <div class="input-suffix"><input asp-for="Room.Price" id="room-price" value="$ 185.000"
-                                                                     required /><b>COP</b></div>
-                                </label>
-                            </div>
-                            <div class="modal-actions"><button type="button" class="secondary-button"
-                                                                   data-modal-close>Cancelar</button><button class="primary-button" type="submit">＋ Crear
-                                habitación</button></div>
-                            </form>
-                        </section>
-                    </div>
+                </div>
+                <div class="room-fields">
+                    <label class="field"><span>Número de habitación</span><input asp-for="Room.Number" id="new-room-number"
+                                                                                     required /></label>
+                    <label class="field"><span>Tipo de habitación</span><select asp-for="Room.TypeId" id="new-room-type">
+                        @foreach (var t in Model.RoomTypes)
+                        {
+                            <option value="@t.Id" data-price="@t.PrecioBase.ToString("N0", new System.Globalization.CultureInfo("es-CO"))">@t.Nombre</option>
+                        }
+                    </select></label>
+                    <label class="field"><span>Piso</span><select asp-for="Room.Floor" id="new-room-floor">
+                        <option value="1">Piso 1</option>
+                        <option value="2">Piso 2</option>
+                        <option value="3">Piso 3</option>
+                    </select></label>
+                    <label class="field"><span>Precio base por noche</span>
+                        <div class="input-suffix"><input id="new-room-price" value="" readonly /><b>COP</b></div>
+                    </label>
+                </div>
+                <div class="modal-actions"><button type="button" class="secondary-button"
+                                                       data-modal-close>Cancelar</button><button class="primary-button" type="submit">＋ Crear
+                    habitación</button></div>
+            </form>
+        </section>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (() => {
+            const num = document.getElementById("new-room-number");
+            const tipo = document.getElementById("new-room-type");
+            const piso = document.getElementById("new-room-floor");
+            const precio = document.getElementById("new-room-price");
+            if (!num || !tipo) return;
+            const actualizar = () => {
+                const opt = tipo.options[tipo.selectedIndex];
+                document.getElementById("preview-number").textContent = num.value || "101";
+                document.getElementById("preview-type").textContent = opt ? opt.text : "";
+                document.getElementById("preview-floor").textContent = "PISO " + piso.value;
+                precio.value = opt ? "$ " + opt.dataset.price : "";
+            };
+            [num, tipo, piso].forEach(e => e.addEventListener("input", actualizar));
+            actualizar();
+        })();
+    </script>
+}

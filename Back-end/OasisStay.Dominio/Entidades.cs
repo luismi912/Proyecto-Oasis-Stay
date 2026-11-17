@@ -60,16 +60,43 @@ public class Habitacion
     /// <summary>Estado de comportamiento, no persistido [GoF State].</summary>
     public IEstadoHabitacion? estadoActual { get; set; }
 
-    private IEstadoHabitacion Actual => estadoActual
-        ?? throw new InvalidOperationException("El estado de la habitación no ha sido reconstruido (F1).");
+    /// <summary>Si aún no se reconstruyó, se arma desde el texto persistido [E2 §3 State].</summary>
+    private IEstadoHabitacion Actual => estadoActual ??= EstadoDesdeTexto(Estado.ToString());
 
     public ResultadoOperacion Reservar() => Actual.Reservar(this);
     public ResultadoOperacion HacerCheckIn() => Actual.HacerCheckIn(this);
     public ResultadoOperacion HacerCheckOut() => Actual.HacerCheckOut(this);
     public ResultadoOperacion MarcarDisponible() => Actual.MarcarDisponible(this);
 
-    /// <summary>Asigna el estado persistido; las guardas de transición son de F1.</summary>
-    public void CambiarEstado(EstadoHabitacion nuevo) => Estado = nuevo;
+    /// <summary>Solo desde Disponible y con motivo de al menos 10 caracteres [DE#1 CP-H07][D-24][JIRA US-02 RN2].</summary>
+    public ResultadoOperacion MarcarMantenimiento(string? motivo)
+        => Actual is EstadoDisponible d
+            ? d.MarcarMantenimiento(this, motivo)
+            : ResultadoOperacion.Rechazada(EstadosHabitacion.NoPermitida(Actual.Nombre));
+
+    /// <summary>Asigna el estado persistido y reconstruye el objeto de estado [GoF State].</summary>
+    public void CambiarEstado(EstadoHabitacion nuevo)
+    {
+        Estado = nuevo;
+        estadoActual = EstadoDesdeTexto(nuevo.ToString());
+    }
+
+    /// <summary>Reservar solo es posible desde Disponible [DE#1 §4 Guardas].</summary>
+    public bool PuedeReservarse() => Actual is EstadoDisponible;
+
+    /// <summary>Reconstruye <see cref="estadoActual"/> desde el texto persistido [E2 §3 State].</summary>
+    public void ReconstruirEstado() => estadoActual = EstadoDesdeTexto(Estado.ToString());
+
+    /// <summary>Texto persistido a objeto de estado [E2 §3 State].</summary>
+    public static IEstadoHabitacion EstadoDesdeTexto(string texto) => texto switch
+    {
+        nameof(EstadoHabitacion.DISPONIBLE) => new EstadoDisponible(),
+        nameof(EstadoHabitacion.RESERVADA) => new EstadoReservada(),
+        nameof(EstadoHabitacion.OCUPADO) => new EstadoOcupada(),
+        nameof(EstadoHabitacion.EN_LIMPIEZA) => new EstadoEnLimpieza(),
+        nameof(EstadoHabitacion.MANTENIMIENTO) => new EstadoMantenimiento(),
+        _ => throw new ArgumentException($"Estado de habitación desconocido: {texto}", nameof(texto)),
+    };
 }
 
 /// <summary>Servicio de consumo [DC][D-29].</summary>
