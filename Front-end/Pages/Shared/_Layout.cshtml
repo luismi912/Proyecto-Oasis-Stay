@@ -30,23 +30,36 @@
                 <a class="brand" asp-page="/Index"><span class="brand-mark">O</span><span><b>Oasis</b> Stay</span></a>
                 <nav class="sidebar-nav">
                     <span class="nav-label">Menú principal</span>
+                    @if (User.IsInRole("Administrador") || User.IsInRole("Recepcionista"))
+                    {
                     <a class="@(currentPage == "/Ventanas/PanelControl" ? "active" : "")"
                        asp-page="/Ventanas/PanelControl"><span>▦</span> Dashboard</a>
                     <a class="@(currentPage == "/Ventanas/Reservas" ? "active" : "")"
                        asp-page="/Ventanas/Reservas"><span>▣</span> Reservas <small>8</small></a>
+                    }
                     <a class="@(currentPage == "/Ventanas/Habitaciones" ? "active" : "")"
                        asp-page="/Ventanas/Habitaciones"><span>▱</span> Habitaciones</a>
+                    @if (User.IsInRole("Administrador") || User.IsInRole("Recepcionista"))
+                    {
                     <a class="@(currentPage == "/Ventanas/Facturacion" ? "active" : "")"
                        asp-page="/Ventanas/Facturacion"><span>▤</span> Facturación</a>
+                    }
+                    @if (User.IsInRole("Administrador"))
+                    {
                     <a class="@(currentPage == "/Ventanas/Historial" ? "active" : "")"
                        asp-page="/Ventanas/Historial"><span>◷</span> Historial</a>
                     <a class="@(currentPage == "/Ventanas/Configuracion" ? "active" : "")"
                        asp-page="/Ventanas/Configuracion"><span>⚙</span> Configuración</a>
+                    }
                 </nav>
                 <div class="sidebar-bottom">
-                    <div class="profile"><span class="avatar">CM</span><span><b>Camila
-                        Mejía</b><small>Administrador</small></span></div>
-                        <a class="logout" asp-page="/Index">↪ Cerrar sesión</a>
+                    @{
+                        var nombreUsuario = User.Identity?.Name ?? "";
+                        var iniciales = string.Concat(nombreUsuario.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+                        var rolUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+                    }
+                    <div class="profile"><span class="avatar">@iniciales</span><span><b>@nombreUsuario</b><small>@rolUsuario</small></span></div>
+                        <a class="logout" asp-page="/Index" asp-page-handler="Logout">↪ Cerrar sesión</a>
                         <small class="version">Oasis PMS · v2.4.0</small>
                     </div>
                 </aside>
@@ -60,7 +73,12 @@
                             class="circle-button notification">♧</button><a class="primary-button"
                                                                             asp-page="/Ventanas/Reservas" asp-fragment="nueva-reserva">＋ Nueva reserva</a></div>
                         </header>
-                        <main class="content">@RenderBody()</main>
+                        <main class="content">
+                            @if (Context.Request.Query.ContainsKey("denegado"))
+                            {
+                                <div class="content-banner" role="alert" style="color:#b42318;background:#fff1f0;margin:0 0 16px;padding:10px 14px;">Acceso denegado: tu rol no tiene permiso para esa pantalla.</div>
+                            }
+                            @RenderBody()</main>
                     </div>
                 </div>
             }

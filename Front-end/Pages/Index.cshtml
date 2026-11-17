@@ -23,17 +23,16 @@
                     @if (!ViewData.ModelState.IsValid)
                     {
                         <div class="content-banner" style="color:#b42318;background:#fff1f0;margin:0 0 16px;padding:10px 14px;">
-                            Usuario o contraseña incorrectos.</div>
+                            @string.Join(" ", ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))</div>
                         }
-                        <label class="field"><span>Usuario</span><input type="email" name="Username" value="admin@oasisstay.co"
+                        <label class="field"><span>Usuario</span><input type="email" name="Username" value="@Model.Username"
                                                                             placeholder="nombre@oasisstay.co" required /></label>
-                            <label class="field"><span>Contraseña</span><input type="password" name="Password" value="oasisstay"
+                            <label class="field"><span>Contraseña</span><input type="password" name="Password"
                                                                                    required /></label>
                                 <div class="login-options"><label><input type="checkbox" checked /> Recordarme</label><button
                                     type="button">¿Olvidaste tu contraseña?</button></div>
                                     <button class="full-button" type="submit">Ingresar al sistema&nbsp; →</button>
                                 </form>
-                                <p class="login-help">Demo: <strong>admin@oasisstay.co</strong> · <strong>oasisstay</strong></p>
                             </div>
                         </section>
                     </main>
