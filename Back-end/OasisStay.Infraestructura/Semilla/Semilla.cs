@@ -69,16 +69,34 @@ public static class SemillaInicial
 public interface ISemillaDemo
 {
     Task SembrarAsync(OasisStayDbContext db);
+
+    /// <summary>Historias que esta semilla sabe reiniciar con --escenario USnn [D-39][D-41].</summary>
+    IReadOnlyCollection<string> Escenarios => Array.Empty<string>();
+
+    /// <summary>Carga los datos exactos del escenario sobre una base ya reiniciada [D-39][D-41].</summary>
+    Task SembrarEscenarioAsync(OasisStayDbContext db, string escenario) => Task.CompletedTask;
 }
 
-/// <summary>Ejecuta todas las ISemillaDemo registradas (argumento --semilla-demo, solo Development) [D-39].</summary>
+/// <summary>Ejecuta las ISemillaDemo registradas (--semilla-demo [--escenario USnn], solo Development) [D-39][D-41].</summary>
 public class EjecutorSemillaDemo
 {
     private readonly IEnumerable<ISemillaDemo> _semillas;
     public EjecutorSemillaDemo(IEnumerable<ISemillaDemo> semillas) => _semillas = semillas;
 
-    public async Task EjecutarAsync(OasisStayDbContext db)
+    public async Task EjecutarAsync(OasisStayDbContext db, string? escenario = null)
     {
-        foreach (var s in _semillas) await s.SembrarAsync(db);
+        if (string.IsNullOrWhiteSpace(escenario))
+        {
+            foreach (var s in _semillas) await s.SembrarAsync(db);
+            return;
+        }
+
+        var clave = escenario.Trim().ToUpperInvariant();
+        var duenas = _semillas.Where(s => s.Escenarios.Contains(clave)).ToList();
+        if (duenas.Count == 0)
+            throw new ArgumentException($"Escenario desconocido: {escenario}. Disponibles: {string.Join(", ", _semillas.SelectMany(s => s.Escenarios).Distinct().Order())}.");
+
+        await ReinicioEscenario.ReiniciarAsync(db);
+        foreach (var s in duenas) await s.SembrarEscenarioAsync(db, clave);
     }
 }

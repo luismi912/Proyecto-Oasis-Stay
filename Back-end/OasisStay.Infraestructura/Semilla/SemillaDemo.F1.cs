@@ -25,4 +25,19 @@ public class SemillaDemoF1 : ISemillaDemo
 
         await db.SaveChangesAsync();
     }
+
+    public IReadOnlyCollection<string> Escenarios => new[] { "US01", "US02" };
+
+    /// <summary>
+    /// US01: 'Estándar' (Doble Clásica) agotada (sin habitaciones Disponibles) para ver la alerta con alternativas [JIRA US-01 ESC2];
+    /// Suite 201 y 304 Disponibles para el ESC1 (10 al 12/11/2026). US02: 301 En limpieza, 105 Disponible, 204 Ocupada.
+    /// </summary>
+    public async Task SembrarEscenarioAsync(OasisStayDbContext db, string escenario)
+    {
+        await SembrarAsync(db); // US02 y base de US01
+        if (escenario != "US01") return;
+        foreach (var h in await db.Habitaciones.Include(x => x.Tipo).Where(x => x.Tipo!.Nombre == "Doble Clásica" && x.Estado == EstadoHabitacion.DISPONIBLE).ToListAsync())
+            h.Estado = EstadoHabitacion.OCUPADO;
+        await db.SaveChangesAsync();
+    }
 }

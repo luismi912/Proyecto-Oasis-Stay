@@ -55,7 +55,12 @@ using (var scope = app.Services.CreateScope())
 
     // [D-39] --semilla-demo: solo Development, idempotente
     if (args.Contains("--semilla-demo") && app.Environment.IsDevelopment())
-        await scope.ServiceProvider.GetRequiredService<EjecutorSemillaDemo>().EjecutarAsync(db);
+    {
+        // [D-41] --escenario USnn reinicia los datos de esa historia; sin él, la semilla de siempre
+        var i = Array.IndexOf(args, "--escenario");
+        var escenario = i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
+        await scope.ServiceProvider.GetRequiredService<EjecutorSemillaDemo>().EjecutarAsync(db, escenario);
+    }
 }
 
 app.Run();

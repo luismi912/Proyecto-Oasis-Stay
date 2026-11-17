@@ -42,4 +42,24 @@ public class SemillaDemoF2 : ISemillaDemo
             await db.SaveChangesAsync();
         }
     }
+
+    public IReadOnlyCollection<string> Escenarios => new[] { "US03", "US04" };
+
+    /// <summary>
+    /// US03: Carlos Mendoza ya existe (ESC2 autocompletado; el ESC1 de huésped nuevo usa otro documento).
+    /// US04: reserva Confirmada de Carlos en la 105 (Reservada, 2 huéspedes) para reasignar a la 107 (ESC3); 304 Suite Disponible (ESC1).
+    /// </summary>
+    public async Task SembrarEscenarioAsync(OasisStayDbContext db, string escenario)
+    {
+        var carlos = await ReinicioEscenario.AsegurarCarlosAsync(db);
+        if (escenario != "US04") return;
+        await ReinicioEscenario.AsegurarDobleAsync(db, 105, EstadoHabitacion.RESERVADA);
+        await ReinicioEscenario.AsegurarDobleAsync(db, 107, EstadoHabitacion.DISPONIBLE);
+        db.Reservas.Add(new Reserva
+        {
+            Cliente = carlos, NumeroHabitacion = 105, Huespedes = 2, Estado = EstadoReserva.Confirmada,
+            FechaInicio = DateTime.Today, FechaFin = DateTime.Today.AddDays(3),
+        });
+        await db.SaveChangesAsync();
+    }
 }
