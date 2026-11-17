@@ -432,6 +432,9 @@ namespace OasisStay.Infraestructura.Persistencia.Migraciones
                     b.Property<DateTime>("FechaInicio")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Huespedes")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdCliente")
                         .HasColumnType("int");
 

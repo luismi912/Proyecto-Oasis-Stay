@@ -41,12 +41,15 @@ public static class ExtensionesDi
         s.AddScoped<IFacturaRepository, FacturaRepository>();
         s.AddScoped<IRepositorioPagos, RepositorioPagos>();
         s.AddScoped<IRepositorioHistorial, RepositorioHistorial>();
+        s.AddScoped<MotorDisponibilidadAsignacion>();
         s.AddScoped<IGestionReservas, GestionReservas>();
         // F1 [CTR §5][D-16][D-39]
         s.AddScoped<IRepositorioTiposHabitacion, RepositorioTiposHabitacion>();
         s.AddScoped<IGestionEstadoHabitacion, GestionEstadoHabitacion>();
         s.AddScoped<IConsultaDisponibilidad, GestionReservas>();
         s.AddScoped<ISemillaDemo, SemillaDemoF1>();
+        s.AddScoped<IRegistroReservas>(sp => (GestionReservas)sp.GetRequiredService<IGestionReservas>());
+        s.AddScoped<ISemillaDemo, SemillaDemoF2>(); // [D-39]
         s.AddScoped<EjecutorSemillaDemo>();
         return s;
     }
