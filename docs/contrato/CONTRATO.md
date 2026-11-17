@@ -28,7 +28,7 @@ secuencia · `DC` diagrama de clases · `CMP` diagrama de componentes · `D-nn` 
 | `Recepcionista` : Usuario | — | `RegistrarReserva`, `AsignarHabitacion`, `ConsultarDisponibilidad`, `GenerarFactura` | DC |
 | `AmaDeLlaves` : Usuario | — | `CambiarEstadoHabitacion` | DC |
 | `Cliente` (huésped) | `IdCliente`, `Nombre`, `TipoDocumento` (CC, CE, Pasaporte), `Documento`, `Telefono`, `Correo`, `Edad` (opcional); obligatorios: tipo y número de documento, nombre, teléfono y correo con sintaxis válida; autocompletado por documento | `RegistrarDatos()`, `ActualizarDatos()` | DC, D-08, D-20, JIRA US-03 RN1-RN3 |
-| `Reserva` | `IdReserva`, `FechaInicio`, `FechaFin`, `Estado` | `CalcularTotal()`, `CancelarReserva()`, `HacerCheckIn()`, `HacerCheckOut()` | DC, DE#4 |
+| `Reserva` | `IdReserva`, `FechaInicio`, `FechaFin`, `Estado`, `Huespedes` (D-40) | `CalcularTotal()`, `CancelarReserva()`, `HacerCheckIn()`, `HacerCheckOut()` | DC, DE#4 |
 | `TipoHabitacion` | `IdTipo`, `Nombre`, `CapacidadMax`, `PrecioBase`, `Descripcion` | `CalcularPrecioNoche()` | DC |
 | `Habitacion` | `NumeroHabitacion`, `Estado` (texto persistido), `estadoActual: IEstadoHabitacion`, `Piso` (1-3), `MotivoMantenimiento` (D-28) | `Reservar()`, `HacerCheckIn()`, `HacerCheckOut()`, `MarcarDisponible()`, `MarcarMantenimiento(motivo)`, `CambiarEstado(nuevo)`, `PuedeReservarse()` | DC, DE#1, GoF, D-28 |
 | `Servicio` (consumo) | `IdServicio`, `Nombre`, `Precio`, `Descripcion` | `AplicarServicio(Reserva)` | DC |
