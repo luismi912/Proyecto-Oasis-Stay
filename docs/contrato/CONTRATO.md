@@ -28,7 +28,7 @@ secuencia · `DC` diagrama de clases · `CMP` diagrama de componentes · `D-nn` 
 | `Recepcionista` : Usuario | — | `RegistrarReserva`, `AsignarHabitacion`, `ConsultarDisponibilidad`, `GenerarFactura` | DC |
 | `AmaDeLlaves` : Usuario | — | `CambiarEstadoHabitacion` | DC |
 | `Cliente` (huésped) | `IdCliente`, `Nombre`, `TipoDocumento` (CC, CE, Pasaporte), `Documento`, `Telefono`, `Correo`, `Edad` (opcional); obligatorios: tipo y número de documento, nombre, teléfono y correo con sintaxis válida; autocompletado por documento | `RegistrarDatos()`, `ActualizarDatos()` | DC, D-08, D-20, JIRA US-03 RN1-RN3 |
-| `Reserva` | `IdReserva`, `FechaInicio`, `FechaFin`, `Estado`, `Huespedes` (D-40) | `CalcularTotal()`, `CancelarReserva()`, `HacerCheckIn()`, `HacerCheckOut()` | DC, DE#4 |
+| `Reserva` | `IdReserva`, `FechaInicio`, `FechaFin`, `Estado`, `Huespedes` (D-40), `Penalidad`, `PenalidadExonerada`, `MotivoExoneracion` (D-44) | `CalcularTotal()`, `CancelarReserva()`, `HacerCheckIn()`, `HacerCheckOut()` | DC, DE#4 |
 | `TipoHabitacion` | `IdTipo`, `Nombre`, `CapacidadMax`, `PrecioBase`, `Descripcion` | `CalcularPrecioNoche()` | DC |
 | `Habitacion` | `NumeroHabitacion`, `Estado` (texto persistido), `estadoActual: IEstadoHabitacion`, `Piso` (1-3), `MotivoMantenimiento` (D-28) | `Reservar()`, `HacerCheckIn()`, `HacerCheckOut()`, `MarcarDisponible()`, `MarcarMantenimiento(motivo)`, `CambiarEstado(nuevo)`, `PuedeReservarse()` | DC, DE#1, GoF, D-28 |
 | `Servicio` (consumo) | `IdServicio`, `Nombre`, `Precio`, `Descripcion`; el consumo de una reserva es `ConsumoReserva` (reserva, servicio, cantidad, monto) (D-43) | `AplicarServicio(Reserva)` | DC |
@@ -136,7 +136,7 @@ Operaciones de los diagramas de secuencia 3-5 (`fuentes/diagramas-secuencia-nuev
 Acceso por rol (E2): Ama de llaves solo `Habitaciones`; Recepcionista operación diaria; Administrador
 indicadores, historial y reportes. Matriz (D-34): Administrador accede a todo; Recepcionista: disponibilidad, reservas, check-in, facturación, pagos y cambio de estado salvo EnLimpieza→Disponible; AmaDeLlaves: solo `Habitaciones` (listar y cambiar estado).
 
-Controles añadidos dentro de las pantallas existentes (D-30): menú de estado en la tarjeta de habitación, botón de check-in y botón "Reasignar" (D-41) y select "Categoría" (D-42) en `Reservas`, detalle/consumos/pago en `Facturacion`, tipo de documento y aceptación de privacidad en `Reservas`. El alta de habitaciones es el modal de `Habitaciones` (Administrador, Piso 1-3, valor por noche = `PrecioBase`) (D-28).
+Controles añadidos dentro de las pantallas existentes (D-30): menú de estado en la tarjeta de habitación, botón de check-in y botón "Reasignar" (D-41) y select "Categoría" (D-42) y botón "Cancelar" con modal de advertencia y casilla "Exonerar" (D-44) en `Reservas`; "Ver historial" y filtros por usuario y fecha en `Historial` (D-37); panel lateral y botón "Actualizar" en `PanelControl` (D-45); modal de exportación de reportes en `Historial` (D-46), detalle/consumos/pago en `Facturacion`, tipo de documento y aceptación de privacidad en `Reservas`. El alta de habitaciones es el modal de `Habitaciones` (Administrador, Piso 1-3, valor por noche = `PrecioBase`) (D-28).
 
 Datos semilla (D-29): Individual cap. 1 / $120.000; Doble Clásica cap. 2 / $185.000; Suite Ejecutiva cap. 4 / $320.000; habitaciones 101-104, 201-204 y 301-304; un usuario por rol (claves por user-secrets); servicio "Minibar".
 
