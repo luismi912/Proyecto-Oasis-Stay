@@ -41,6 +41,39 @@ public class ReservaListadoRespuesta
     public DateTime FechaFin { get; set; }
     public int Huespedes { get; set; }
     public string Estado { get; set; } = "";
+    /// <summary>Penalidad registrada por cancelación tardía o No-Show [D-44].</summary>
+    public decimal Penalidad { get; set; }
+    public bool PenalidadExonerada { get; set; }
+}
+
+public class CancelacionSolicitud
+{
+    public bool Exonerar { get; set; }
+    public string? Motivo { get; set; }
+}
+
+public class CancelacionRespuesta
+{
+    public string Estado { get; set; } = "";
+    public decimal Penalidad { get; set; }
+    public bool Exonerada { get; set; }
+}
+
+public class PenalidadRespuesta
+{
+    public bool Gratis { get; set; }
+    public decimal Penalidad { get; set; }
+    public DateTime Limite { get; set; }
+}
+
+public class NoShowSolicitud
+{
+    public DateTime? FechaCorte { get; set; }
+}
+
+public class NoShowRespuesta
+{
+    public int Procesadas { get; set; }
 }
 
 public class ReasignacionSolicitud
