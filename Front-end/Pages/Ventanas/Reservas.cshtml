@@ -22,6 +22,12 @@
     <span><strong>@Model.Reservas.Count(r => r.Estado == "Confirmada" || r.Estado == "EnCurso") reservas activas</strong><small>Revisa llegadas, pagos y disponibilidad desde una sola
         vista.</small></span>
         <a class="primary-button" href="#nueva-reserva" data-modal-open="reservation-modal">＋ Nueva reserva</a>
+        @if (User.IsInRole("Administrador"))
+        {
+            <form method="post" asp-page-handler="NoShow" class="noshow-form">
+                <button type="submit" class="secondary-button" title="Procesa las reservas Confirmadas sin check-in al cierre del día de llegada">Ejecutar No-Show</button>
+            </form>
+        }
     </div>
     <section class="table-card">
         <div class="table-head">
@@ -43,6 +49,7 @@
                     <th>Total</th>
                     <th>Check-in</th>
                     <th>Reasignar</th>
+                    <th>Cancelar</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,7 +60,13 @@
                         <td>@item.Cliente</td>
                         <td>Hab. @item.Habitacion</td>
                         <td>@item.FechaInicio.ToString("dd MMM") — @item.FechaFin.ToString("dd MMM")</td>
-                        <td><span class="payment @(item.Estado == "Confirmada" ? "pending" : "")">@item.Estado</span></td>
+                        <td>
+                            <span class="payment @(item.Estado == "Confirmada" ? "pending" : "")">@item.Estado</span>
+                            @if (item.Estado is "Cancelada" or "NoShow")
+                            {
+                                <small class="penalidad-nota">@(item.PenalidadExonerada ? "Penalidad exonerada" : "Penalidad $" + item.Penalidad.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO")))</small>
+                            }
+                        </td>
                         @if (Model.Cobros.TryGetValue(item.IdReserva, out var cobro))
                         {
                             <td><span class="payment @(cobro.EstadoPago == "Pendiente" ? "pending" : "")">@cobro.EstadoPago</span></td>
@@ -81,6 +94,13 @@
                                         data-id="@item.IdReserva" data-habitacion="@item.Habitacion" data-cliente="@item.Cliente"
                                         data-inicio="@item.FechaInicio.ToString("yyyy-MM-dd")" data-fin="@item.FechaFin.ToString("yyyy-MM-dd")"
                                         data-huespedes="@item.Huespedes">Reasignar</button>
+                            }
+                        </td>
+                        <td>
+                            @if (item.Estado == "Confirmada")
+                            {
+                                <button type="button" class="secondary-button danger-button" data-cancelar data-modal-open="cancelar-modal"
+                                        data-id="@item.IdReserva" data-habitacion="@item.Habitacion" data-cliente="@item.Cliente">Cancelar</button>
                             }
                         </td>
                     </tr>
@@ -175,6 +195,32 @@
             <div class="reasignar-aviso" id="reasignar-aviso" role="alert" hidden></div>
             <div class="reasignar-lista room-options" id="reasignar-lista"><p class="availability-loading">Consultando disponibilidad…</p></div>
             <div class="modal-actions"><button type="button" class="secondary-button" data-modal-close>Cancelar</button><button class="primary-button" type="submit" id="reasignar-enviar">✓ Reasignar</button></div>
+        </form>
+    </section>
+</div>
+
+@* Cancelar reserva [JIRA US-08][D-44]: advertencia ámbar (gratis) o roja (penalidad) con el cargo calculado por la API *@
+<div class="modal-backdrop" id="cancelar-modal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="cancelar-title">
+        <div class="modal-heading">
+            <div><span class="eyebrow">Cancelar reserva</span>
+                <h2 id="cancelar-title">Reserva <span id="cancelar-reserva"></span></h2>
+                <p><strong id="cancelar-cliente"></strong> · <span id="cancelar-habitacion"></span></p>
+            </div>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+        <form method="post" asp-page-handler="Cancelar" class="modal-form" id="cancelar-form">
+            <input type="hidden" name="id" id="cancelar-id" />
+            <div class="toast error reasignar-error" id="cancelar-error" role="alert" hidden></div>
+            <div class="cancelar-aviso" id="cancelar-aviso" role="alert"><p class="availability-loading">Calculando cargo…</p></div>
+            @if (User.IsInRole("Administrador"))
+            {
+                <div class="cancelar-exonerar" id="cancelar-exonerar" hidden>
+                    <label class="field privacy"><span><input type="checkbox" name="exonerar" value="true" id="cancelar-exonerar-chk" /> Exonerar penalidad</span></label>
+                    <label class="field" id="cancelar-motivo-campo" hidden><span>Motivo de la exoneración (obligatorio)</span><input name="motivo" id="cancelar-motivo" placeholder="Ej. Emergencia médica demostrada" /></label>
+                </div>
+            }
+            <div class="modal-actions"><button type="button" class="secondary-button" data-modal-close>Volver</button><button class="primary-button" type="submit" id="cancelar-enviar">Confirmar cancelación</button></div>
         </form>
     </section>
 </div>

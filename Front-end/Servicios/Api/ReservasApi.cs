@@ -5,7 +5,10 @@ using System.Text.Json;
 namespace Front_end.Servicios.Api;
 
 public record HuespedDto(string TipoDocumento, string Documento, string Nombre, string Telefono, string Correo);
-public record ReservaListadoDto(int IdReserva, string Cliente, int Habitacion, DateTime FechaInicio, DateTime FechaFin, int Huespedes, string Estado);
+public record ReservaListadoDto(int IdReserva, string Cliente, int Habitacion, DateTime FechaInicio, DateTime FechaFin, int Huespedes, string Estado,
+    decimal Penalidad = 0m, bool PenalidadExonerada = false);
+public record CancelacionDto(string Estado, decimal Penalidad, bool Exonerada);
+public record NoShowDto(int Procesadas);
 public record ReservaCreadaDto(int IdReserva, string Estado);
 
 /// <summary>Error de la API con el mensaje acordado y, si aplica, los mensajes por campo.</summary>
@@ -59,6 +62,29 @@ public class ReservasApi
     {
         var r = await _http.PutAsJsonAsync($"api/reservas/{idReserva}/habitacion", new { numeroHabitacionNueva, confirmarUpgrade });
         if (!r.IsSuccessStatusCode) throw await ErrorAsync(r);
+    }
+
+    /// <summary>Vista previa del cargo de la cancelación [JIRA US-08 UX]: estado HTTP y JSON tal cual para el modal.</summary>
+    public async Task<(int Estado, string Cuerpo)> PenalidadAsync(int idReserva)
+    {
+        var r = await _http.GetAsync($"api/reservas/{idReserva}/penalidad");
+        return ((int)r.StatusCode, await r.Content.ReadAsStringAsync());
+    }
+
+    /// <summary>Cancela la reserva [JIRA US-08]; la API decide plazo, penalidad y quién puede exonerar.</summary>
+    public async Task<CancelacionDto> CancelarAsync(int idReserva, bool exonerar, string? motivo)
+    {
+        var r = await _http.PostAsJsonAsync($"api/reservas/{idReserva}/cancelar", new { exonerar, motivo });
+        if (!r.IsSuccessStatusCode) throw await ErrorAsync(r);
+        return (await r.Content.ReadFromJsonAsync<CancelacionDto>(Web))!;
+    }
+
+    /// <summary>Acción manual del No-Show (solo Administrador) [DE#4 CP-R05][D-44].</summary>
+    public async Task<NoShowDto> EjecutarNoShowAsync()
+    {
+        var r = await _http.PostAsJsonAsync("api/reservas/no-show/ejecutar", new { });
+        if (!r.IsSuccessStatusCode) throw await ErrorAsync(r);
+        return (await r.Content.ReadFromJsonAsync<NoShowDto>(Web))!;
     }
 
     public async Task CheckInAsync(int idReserva, string? documento)

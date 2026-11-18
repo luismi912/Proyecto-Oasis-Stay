@@ -134,6 +134,58 @@ namespace Front_end.Pages
             }
         }
 
+        /// <summary>Vista previa del cargo antes de cancelar [JIRA US-08 UX]; la calcula la API.</summary>
+        public async Task<IActionResult> OnGetPenalidadAsync(int id)
+        {
+            try
+            {
+                var (estado, cuerpo) = await _api.PenalidadAsync(id);
+                return new ContentResult { StatusCode = estado, Content = cuerpo, ContentType = "application/json" };
+            }
+            catch (HttpRequestException)
+            {
+                return new ContentResult { StatusCode = 502, ContentType = "application/json", Content = "{\"detail\":\"No se pudo calcular la penalidad.\"}" };
+            }
+        }
+
+        /// <summary>Cancelar [JIRA US-08 ESC1-ESC3]: responde JSON con el texto de la API cuando se rechaza.</summary>
+        public async Task<IActionResult> OnPostCancelarAsync(int id, bool exonerar, string? motivo)
+        {
+            try
+            {
+                var r = await _api.CancelarAsync(id, exonerar, motivo);
+                TempData["ReservationSuccess"] = r.Exonerada
+                    ? $"Reserva #{id} cancelada. Penalidad exonerada: $0."
+                    : r.Penalidad > 0
+                        ? $"Reserva #{id} cancelada. Penalidad aplicada: ${r.Penalidad.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))}."
+                        : $"Reserva #{id} cancelada sin penalidad. La habitación queda disponible.";
+                return new JsonResult(new { ok = true });
+            }
+            catch (ApiException ex)
+            {
+                return new JsonResult(new { ok = false, detail = ex.Message });
+            }
+            catch (HttpRequestException)
+            {
+                return new JsonResult(new { ok = false, detail = "No se pudo cancelar la reserva." });
+            }
+        }
+
+        /// <summary>Ejecuta la rutina de No-Show al cierre del día [DE#4 CP-R05][D-44]; solo Administrador (lo exige la API).</summary>
+        public async Task<IActionResult> OnPostNoShowAsync()
+        {
+            try
+            {
+                var r = await _api.EjecutarNoShowAsync();
+                TempData["ReservationSuccess"] = $"No-Show ejecutado: {r.Procesadas} reservas procesadas.";
+            }
+            catch (ApiException ex)
+            {
+                TempData["ReservationError"] = ex.Message;
+            }
+            return RedirectToPage();
+        }
+
         public async Task<IActionResult> OnPostCheckInAsync(int id, string? documento)
         {
             try

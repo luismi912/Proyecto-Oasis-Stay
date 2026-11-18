@@ -207,6 +207,58 @@
         });
     }
 
+    // Cancelar reserva [JIRA US-08 UX][D-44]: solo presentación; la API calcula el cargo y decide plazo, rol y motivo
+    const cancelarModal = document.getElementById("cancelar-modal");
+    if (cancelarModal) {
+        const aviso = cancelarModal.querySelector("#cancelar-aviso");
+        const errorBox = cancelarModal.querySelector("#cancelar-error");
+        const form = cancelarModal.querySelector("#cancelar-form");
+        const exonerar = cancelarModal.querySelector("#cancelar-exonerar");
+        const chk = cancelarModal.querySelector("#cancelar-exonerar-chk");
+        const campo = cancelarModal.querySelector("#cancelar-motivo-campo");
+        const motivo = cancelarModal.querySelector("#cancelar-motivo");
+        const pesos = v => "$" + Math.round(v).toLocaleString("es-CO");
+
+        chk?.addEventListener("change", () => { campo.hidden = !chk.checked; if (!chk.checked) motivo.value = ""; });
+
+        document.querySelectorAll("[data-cancelar]").forEach(boton => boton.addEventListener("click", async () => {
+            const d = boton.dataset;
+            errorBox.hidden = true;
+            aviso.className = "cancelar-aviso";
+            aviso.innerHTML = '<p class="availability-loading">Calculando cargo…</p>';
+            if (exonerar) { exonerar.hidden = true; chk.checked = false; campo.hidden = true; motivo.value = ""; }
+            form.querySelector("#cancelar-id").value = d.id;
+            cancelarModal.querySelector("#cancelar-reserva").textContent = "#" + d.id;
+            cancelarModal.querySelector("#cancelar-cliente").textContent = d.cliente;
+            cancelarModal.querySelector("#cancelar-habitacion").textContent = "Hab. " + d.habitacion;
+            try {
+                const r = await fetch(`?handler=Penalidad&id=${d.id}`);
+                const j = await r.json();
+                if (!r.ok) { aviso.innerHTML = ""; errorBox.textContent = j.detail || "No se pudo calcular la penalidad."; errorBox.hidden = false; return; }
+                const limite = new Date(j.limite).toLocaleString("es-CO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+                if (j.gratis) {
+                    aviso.className = "cancelar-aviso ambar";
+                    aviso.textContent = `Cancelación gratuita (hasta ${limite}). No se cobra penalidad y la habitación queda disponible.`;
+                } else {
+                    aviso.className = "cancelar-aviso roja";
+                    aviso.textContent = `Cancelación tardía (el plazo venció el ${limite}). Se cobrará la primera noche: ${pesos(j.penalidad)}.`;
+                    if (exonerar) exonerar.hidden = false;
+                }
+            } catch { aviso.innerHTML = ""; errorBox.textContent = "No se pudo calcular la penalidad."; errorBox.hidden = false; }
+        }));
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            errorBox.hidden = true;
+            try {
+                const r = await fetch(form.action, { method: "POST", body: new FormData(form) });
+                const j = await r.json();
+                if (j.ok) { window.location.reload(); return; }
+                errorBox.textContent = j.detail; errorBox.hidden = false;
+            } catch { errorBox.textContent = "No se pudo cancelar la reserva."; errorBox.hidden = false; }
+        });
+    }
+
     const roomNumber = document.getElementById("room-number");
     const roomType = document.getElementById("room-type");
     if (roomNumber && roomType) {

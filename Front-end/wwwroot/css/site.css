@@ -1410,4 +1410,12 @@ body.modal-open {
 .reasignar-lista { display: grid; gap: .5rem; margin: 1rem 0; max-height: 18rem; overflow-y: auto; }
 .reasignar-aviso { background: #fff6e5; color: #8a5a00; border: 1px solid #f0d9a8; border-radius: .5rem; padding: .6rem .8rem; font-size: .85rem; margin-bottom: .6rem; }
 .reasignar-aviso[hidden], .reasignar-error[hidden] { display: none; }
+/* Cancelar reserva [JIRA US-08 UX] */
+.cancelar-aviso { border-radius: .5rem; padding: .8rem 1rem; font-size: .9rem; margin-bottom: .8rem; border: 1px solid #d9d9d9; }
+.cancelar-aviso.ambar { background: #fff6e5; color: #8a5a00; border-color: #f0d9a8; }
+.cancelar-aviso.roja { background: #fdecec; color: #a12121; border-color: #f2bcbc; font-weight: 600; }
+.cancelar-exonerar[hidden], #cancelar-motivo-campo[hidden], .cancelar-error[hidden] { display: none; }
+.danger-button { color: #a12121; border-color: #f2bcbc; }
+.penalidad-nota { display: block; color: #a12121; font-size: .75rem; margin-top: .2rem; }
+.noshow-form { display: inline-block; margin-left: .5rem; }
 .reasignar-error { margin-bottom: .6rem; }
