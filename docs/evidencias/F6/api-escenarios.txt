@@ -1,0 +1,27 @@
+== ESC1 resumen 01-15 oct 2026 (Admin)
+{"ingresoTotal":12500000.00,"ingresoBruto":12500000.00,"ingresoNeto":10504201.66,"ticketPromedio":277777.78,"ocupacionPorcentaje":30.0,"cancelaciones":0,"porMetodoPago":[{"metodo":"EFECTIVO","monto":3346359.00,"pagos":12},{"metodo":"TARJETA_CREDITO","monto":3034547.00,"pagos":11},{"metodo":"TARJETA_DEBITO","monto":3094547.00,"pagos":11},{"metodo":"TRANSFERENCIA","monto":3024547.00,"pagos":11}],"facturas":45}
+== ESC1 exportar xlsx
+HTTP/1.1 200 OK
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+Content-Disposition: attachment; filename=reporte-financiero_20261001_20261015.xlsx; filename*=UTF-8''reporte-financiero_20261001_20261015.xlsx
+== ESC2 exportar pdf
+HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename=reporte-financiero_20261001_20261015.pdf; filename*=UTF-8''reporte-financiero_20261001_20261015.pdf
+== ESC3 2027 resumen
+{"ingresoTotal":0,"ingresoBruto":0,"ingresoNeto":0,"ticketPromedio":0,"ocupacionPorcentaje":0,"cancelaciones":0,"porMetodoPago":[],"facturas":0}
+== ESC3 2027 exportar
+{"status":409,"detail":"No hay movimientos en el periodo seleccionado: no se genera un archivo en blanco"}
+HTTP 409
+== ESC3 400 dias
+{"status":400,"detail":"El rango máximo por reporte es de 365 días"}
+HTTP 400
+== formato invalido
+{"status":400,"detail":"El formato del reporte no es válido: use xlsx o pdf"}
+HTTP 400
+== AmaDeLlaves (exportar)
+HTTP 403
+== Recepcionista (resumen)
+HTTP 403
+== Sin token
+HTTP 401
