@@ -21,6 +21,7 @@ public class OasisStayDbContext : IdentityDbContext<UsuarioOasis>
     public DbSet<TipoHabitacion> TiposHabitacion => Set<TipoHabitacion>();
     public DbSet<Habitacion> Habitaciones => Set<Habitacion>();
     public DbSet<Servicio> Servicios => Set<Servicio>();
+    public DbSet<ConsumoReserva> ConsumosReserva => Set<ConsumoReserva>();
     public DbSet<Factura> Facturas => Set<Factura>();
     public DbSet<DetalleFactura> DetallesFactura => Set<DetalleFactura>();
     public DbSet<Pago> Pagos => Set<Pago>();
@@ -43,6 +44,13 @@ public class OasisStayDbContext : IdentityDbContext<UsuarioOasis>
         b.Entity<Factura>().HasKey(x => x.IdFactura);
         b.Entity<DetalleFactura>().HasKey(x => x.IdDetalle);
         b.Entity<Pago>().HasKey(x => x.IdPago);
+        b.Entity<ConsumoReserva>(e =>
+        {
+            e.HasKey(x => x.IdConsumo);
+            e.Property(x => x.Concepto).HasMaxLength(100);
+            e.HasOne<Reserva>().WithMany(r => r.Consumos).HasForeignKey(x => x.IdReserva);
+            e.HasOne<Servicio>().WithMany().HasForeignKey(x => x.IdServicio);
+        });
         b.Entity<HistorialReserva>().HasKey(x => x.IdHistorial);
         b.Entity<Notificacion>().HasKey(x => x.IdNotificacion);
 
@@ -83,6 +91,7 @@ public class OasisStayDbContext : IdentityDbContext<UsuarioOasis>
         {
             e.Property(f => f.Folio).HasDefaultValueSql("NEXT VALUE FOR SeqFolioFactura");
             e.HasIndex(f => f.Folio).IsUnique();
+            e.HasIndex(f => f.IdReserva).IsUnique(); // una sola factura por reserva [JIRA US-06 riesgo]
             e.HasOne<Reserva>().WithMany().HasForeignKey(f => f.IdReserva);
             e.HasMany(f => f.Detalles).WithOne().HasForeignKey(d => d.IdFactura);
         });

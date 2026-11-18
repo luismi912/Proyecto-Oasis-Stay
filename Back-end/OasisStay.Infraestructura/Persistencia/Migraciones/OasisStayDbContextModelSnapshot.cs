@@ -200,6 +200,44 @@ namespace OasisStay.Infraestructura.Persistencia.Migraciones
                     b.ToTable("Clientes");
                 });
 
+            modelBuilder.Entity("OasisStay.Dominio.ConsumoReserva", b =>
+                {
+                    b.Property<int>("IdConsumo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdConsumo"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Concepto")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdReserva")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdServicio")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ValorUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("IdConsumo");
+
+                    b.HasIndex("IdReserva");
+
+                    b.HasIndex("IdServicio");
+
+                    b.ToTable("ConsumosReserva");
+                });
+
             modelBuilder.Entity("OasisStay.Dominio.DetalleFactura", b =>
                 {
                     b.Property<int>("IdDetalle")
@@ -268,7 +306,8 @@ namespace OasisStay.Infraestructura.Persistencia.Migraciones
                     b.HasIndex("Folio")
                         .IsUnique();
 
-                    b.HasIndex("IdReserva");
+                    b.HasIndex("IdReserva")
+                        .IsUnique();
 
                     b.ToTable("Facturas");
                 });
@@ -639,6 +678,20 @@ namespace OasisStay.Infraestructura.Persistencia.Migraciones
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("OasisStay.Dominio.ConsumoReserva", b =>
+                {
+                    b.HasOne("OasisStay.Dominio.Reserva", null)
+                        .WithMany("Consumos")
+                        .HasForeignKey("IdReserva")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OasisStay.Dominio.Servicio", null)
+                        .WithMany()
+                        .HasForeignKey("IdServicio")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("OasisStay.Dominio.DetalleFactura", b =>
                 {
                     b.HasOne("OasisStay.Dominio.Factura", null)
@@ -723,6 +776,8 @@ namespace OasisStay.Infraestructura.Persistencia.Migraciones
 
             modelBuilder.Entity("OasisStay.Dominio.Reserva", b =>
                 {
+                    b.Navigation("Consumos");
+
                     b.Navigation("Pagos");
                 });
 #pragma warning restore 612, 618
