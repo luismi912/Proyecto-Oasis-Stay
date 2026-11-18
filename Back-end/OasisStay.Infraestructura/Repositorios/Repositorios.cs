@@ -169,10 +169,13 @@ public class RepositorioPagos : IRepositorioPagos
 }
 
 /// <summary>Solo inserción [D-23][JIRA US-07 RN2].</summary>
-public class RepositorioHistorial : IRepositorioHistorial
+public class RepositorioHistorial : IRepositorioHistorial, IRepositorioAuditoriaReportes
 {
     private readonly OasisStayDbContext _db;
+    private readonly IUsuarioActual? _usuario;
     public RepositorioHistorial(OasisStayDbContext db) => _db = db;
+    /// <summary>El evento del check-out registra el usuario autenticado [D-47].</summary>
+    public RepositorioHistorial(OasisStayDbContext db, IUsuarioActual usuario) : this(db) => _usuario = usuario;
 
     public void RegistrarEvento(HistorialReserva evento)
     {
@@ -210,6 +213,13 @@ public class RepositorioHistorial : IRepositorioHistorial
         return q.OrderBy(h => h.FechaRegistro).ThenBy(h => h.IdHistorial).ToList();
     }
 
+    /// <summary>Constancia de la exportación: usuario, fecha/hora, rango y formato [DS3 GuardarAuditoria][D-46].</summary>
+    public void GuardarAuditoria(AuditoriaReporte reporte)
+    {
+        _db.AuditoriasReporte.Add(reporte);
+        _db.SaveChanges();
+    }
+
     /// <summary>
     /// Último paso del check-out: Reserva EnCurso → Finalizada y evento en la bitácora [DE#4 archivarReserva][JIRA US-06 RN2][D-23].
     /// Firma del GoF Archivar(idReserva, factura) [CTR §5].
@@ -225,7 +235,7 @@ public class RepositorioHistorial : IRepositorioHistorial
             FechaRegistro = factura.FechaEmision,
             AccionRealizada = "Check-out",
             IdReserva = idReserva,
-            Usuario = "sistema",
+            Usuario = string.IsNullOrWhiteSpace(_usuario?.Nombre) ? "sistema" : _usuario.Nombre, // [D-47]
             ValorAnterior = anterior.ToString(),
             ValorNuevo = $"{reserva.Estado} · Factura folio {factura.Folio}",
         });

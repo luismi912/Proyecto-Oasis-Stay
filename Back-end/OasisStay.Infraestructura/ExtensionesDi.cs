@@ -9,6 +9,7 @@ using OasisStay.Dominio;
 using OasisStay.Infraestructura.Facturacion;
 using OasisStay.Infraestructura.Identidad;
 using OasisStay.Infraestructura.Persistencia;
+using OasisStay.Infraestructura.Reportes;
 using OasisStay.Infraestructura.Repositorios;
 using OasisStay.Infraestructura.Semilla;
 using OasisStay.Infraestructura.Seguridad;
@@ -72,6 +73,14 @@ public static class ExtensionesDi
         s.AddScoped<ICancelacionReservas>(sp => (GestionReservas)sp.GetRequiredService<IGestionReservas>());
         s.AddScoped<ISemillaDemo, SemillaDemoF4>(); // [D-39][D-41]
         s.AddScoped<ISemillaDemo, SemillaDemoF4a>(); // [D-39][D-41]
+        // F6 [DS3][JIRA US-11][D-46]
+        s.AddScoped<IRepositorioAuditoriaReportes>(sp => (RepositorioHistorial)sp.GetRequiredService<IRepositorioHistorial>());
+        s.AddScoped<IRepositorioReportes, RepositorioReportes>();
+        s.AddSingleton<IGeneradorReporte, GeneradorReporteExcel>();
+        s.AddSingleton<IGeneradorReporte, GeneradorReportePdf>();
+        s.AddScoped<AuditoriaHistorial>();
+        s.AddScoped<ServicioReportes>();
+        s.AddScoped<ISemillaDemo, SemillaDemoF6>(); // [D-39][D-41]
         s.AddScoped<EjecutorSemillaDemo>();
         return s;
     }
