@@ -287,6 +287,7 @@ public class CheckoutPruebas : IClassFixture<BancoF3>
     {
         public void RegistrarEvento(HistorialReserva evento) => throw new InvalidOperationException("Fallo forzado");
         public void Archivar(int idReserva, Factura factura) => throw new InvalidOperationException("Fallo forzado al archivar");
+        public IReadOnlyList<HistorialReserva> BuscarEventos(FiltrosHistorial filtros) => throw new NotImplementedException();
     }
 
     [Fact] // [E2 §3 Facade]
