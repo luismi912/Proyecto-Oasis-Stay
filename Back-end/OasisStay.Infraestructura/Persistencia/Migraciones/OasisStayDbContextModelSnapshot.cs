@@ -477,8 +477,18 @@ namespace OasisStay.Infraestructura.Persistencia.Migraciones
                     b.Property<int>("IdCliente")
                         .HasColumnType("int");
 
+                    b.Property<string>("MotivoExoneracion")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("NumeroHabitacion")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Penalidad")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("PenalidadExonerada")
+                        .HasColumnType("bit");
 
                     b.HasKey("IdReserva");
 

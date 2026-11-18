@@ -13,6 +13,11 @@ public static class MensajesReserva
     public const string DocumentoNoVerificado = "Debe verificar el documento del huésped";
     public const string CheckInAntesDeLlegada = "El check-in no puede hacerse antes de la fecha de llegada";
     public const string ReservaNoConfirmada = "La reserva no está confirmada";
+    // F4 [D-44][JIRA US-08 RN3]
+    public const string CancelarEnCurso = "Una reserva en curso no puede cancelarse";
+    public const string ReservaCerrada = "La reserva ya está cerrada y no puede cambiar de estado";
+    public const string FaltaJustificacion = "Debe ingresar la justificación de la exoneración";
+    public const string SoloAdminExonera = "Solo el Administrador puede exonerar la penalidad";
 }
 
 /// <summary>Resultado de un validador de la cadena [GoF Chain][CTR §4].</summary>
