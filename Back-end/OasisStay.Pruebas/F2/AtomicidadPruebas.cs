@@ -15,7 +15,7 @@ namespace OasisStay.Pruebas.F2;
 [Collection("SqlServer")]
 public class AtomicidadPruebas : IAsyncLifetime
 {
-    private const string Cadena = "Server=localhost;Database=OasisStay_PruebasF2;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+    private static readonly string Cadena = NombresBasePruebas.Cadena("F2");
     private readonly RelojFijo _reloj = new();
 
     private static OasisStayDbContext Contexto() =>

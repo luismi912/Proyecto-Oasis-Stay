@@ -20,7 +20,7 @@ namespace OasisStay.Pruebas.F5;
 /// <summary>Base propia OasisStay_PruebasF5 (se borra al terminar) con los tipos de la semilla inicial [D-29][D-39].</summary>
 public sealed class BancoF5 : IAsyncLifetime
 {
-    public const string Cadena = "Server=localhost;Database=OasisStay_PruebasF5;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+    public static readonly string Cadena = NombresBasePruebas.Cadena("F5");
 
     public static OasisStayDbContext Contexto() =>
         new(new DbContextOptionsBuilder<OasisStayDbContext>().UseSqlServer(Cadena).Options, new CifradorAes256(Banco.Clave));

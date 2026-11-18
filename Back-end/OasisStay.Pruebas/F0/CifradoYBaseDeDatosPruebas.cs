@@ -11,7 +11,7 @@ namespace OasisStay.Pruebas.F0;
 [Collection("SqlServer")]
 public class CifradoYBaseDeDatosPruebas
 {
-    private const string Cadena = "Server=localhost;Database=OasisStay_Pruebas;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+    private static readonly string Cadena = NombresBasePruebas.Cadena();
     private static readonly byte[] Clave = Enumerable.Range(1, 32).Select(i => (byte)i).ToArray();
 
     private static OasisStayDbContext Contexto() =>
@@ -97,4 +97,31 @@ public class CifradoYBaseDeDatosPruebas
 }
 
 [CollectionDefinition("SqlServer", DisableParallelization = true)]
-public class SqlServerCollection { }
+public class SqlServerCollection : ICollectionFixture<LimpiezaBasesDeEjecucion> { }
+
+/// <summary>Al terminar la colección borra todas las bases de esta ejecución (también si alguna prueba falló).</summary>
+public sealed class LimpiezaBasesDeEjecucion : IDisposable
+{
+    public void Dispose()
+    {
+        try
+        {
+            SqlConnection.ClearAllPools();
+            using var cn = new SqlConnection("Server=localhost;Database=master;Trusted_Connection=True;TrustServerCertificate=True");
+            cn.Open();
+            var nombres = new List<string>();
+            using (var q = new SqlCommand("SELECT name FROM sys.databases WHERE name LIKE @p ESCAPE '\\'", cn))
+            {
+                q.Parameters.AddWithValue("@p", NombresBasePruebas.Prefijo.Replace("_", "\\_") + "%\\_" + NombresBasePruebas.SufijoActual);
+                using var rd = q.ExecuteReader();
+                while (rd.Read()) nombres.Add(rd.GetString(0));
+            }
+            foreach (var n in nombres)
+            {
+                using var d = new SqlCommand($"ALTER DATABASE [{n}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{n}]", cn);
+                d.ExecuteNonQuery();
+            }
+        }
+        catch { /* limpieza de mejor esfuerzo */ }
+    }
+}

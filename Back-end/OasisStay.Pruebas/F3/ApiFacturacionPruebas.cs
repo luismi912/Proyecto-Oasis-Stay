@@ -16,7 +16,7 @@ namespace OasisStay.Pruebas.F3;
 /// <summary>API sobre SQL Server real (OasisStay_PruebasF3Api, se borra al terminar) [D-06].</summary>
 public class FabricaApiF3 : FabricaApi
 {
-    public const string CadenaApi = "Server=localhost;Database=OasisStay_PruebasF3Api;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+    public static readonly string CadenaApi = NombresBasePruebas.Cadena("F3Api");
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
