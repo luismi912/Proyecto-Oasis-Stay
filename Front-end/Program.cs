@@ -12,6 +12,9 @@ builder.Services.AddHttpClient<OasisApiClient>(c =>
 builder.Services.AddHttpClient<HabitacionesApi>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
     .AddHttpMessageHandler<JwtDelegatingHandler>();
+builder.Services.AddHttpClient<DistribucionApi>(c =>
+        c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
+    .AddHttpMessageHandler<JwtDelegatingHandler>();
 builder.Services.AddHttpClient<ReservasApi>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
     .AddHttpMessageHandler<JwtDelegatingHandler>();

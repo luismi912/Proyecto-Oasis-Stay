@@ -66,6 +66,7 @@ public static class ExtensionesDi
         s.AddScoped<ICheckoutFacade, CheckoutFacade>();
         s.AddSingleton<IGeneradorFacturaPdf, FacturaPdfGenerator>();
         s.AddScoped<ISemillaDemo, SemillaDemoF3>(); // [D-39]
+        s.AddScoped<ISemillaDemo, SemillaDemoF5>(); // [D-39][D-41]
         s.AddScoped<EjecutorSemillaDemo>();
         return s;
     }
