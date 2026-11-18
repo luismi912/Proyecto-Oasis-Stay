@@ -1,0 +1,10 @@
+F7 - verificacion en pantalla (API http://localhost:5110, front http://localhost:5111, base OasisStay_F7Demo con --semilla-demo)
+== Facturacion antes de emitir factura
+Ingresos del mes $0 | Facturas emitidas 0 | Por cobrar $2.862.000 | 10 cuentas abiertas
+== Check-out de la reserva #14 (Hab. 225, $523.600, efectivo) desde la pantalla
+== Facturacion despues
+Ingresos del mes $523.600 | Facturas emitidas 1 | Por cobrar $2.338.400 | 9 cuentas abiertas
+(2.862.000 - 523.600 = 2.338.400)
+== Modal Nueva reserva (US-01), observacion 2
+1) Check-in 15/12, check-out 14/12 -> aviso "La fecha de salida debe ser posterior a la fecha de llegada" (alerta y nota del resumen); resumen "-" / "Sin habitaciones disponibles"
+2) Corregir a 15/12-16/12, 4 huespedes, categoria sin cupo -> el aviso de fechas desaparece; solo queda "No hay habitaciones disponibles para ese criterio... Alternativas con cupo: Suite Ejecutiva"; nota del resumen restaurada; resumen "-" (sin datos viejos)
