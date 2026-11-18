@@ -107,6 +107,7 @@ public class OasisStayDbContext : IdentityDbContext<UsuarioOasis>
             e.Property(h => h.AccionRealizada).HasMaxLength(200);
             e.Property(h => h.Usuario).HasMaxLength(256);
             e.HasIndex(h => h.IdReserva);
+            e.HasIndex(h => h.FechaRegistro); // [JIRA US-07 riesgo: indexación por ID de reserva y fecha]
         });
 
         foreach (var fk in b.Model.GetEntityTypes()
