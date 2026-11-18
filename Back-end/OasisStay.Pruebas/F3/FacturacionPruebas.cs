@@ -249,6 +249,23 @@ public class CheckoutPruebas : IClassFixture<BancoF3>
         Assert.Equal(EstadoHabitacion.OCUPADO, v.Habitaciones.Single(h => h.NumeroHabitacion == hab).Estado);
     }
 
+    [Fact] // [DS4 cerrarCuenta][JIRA US-06]: guarda EnCurso de CerrarCuenta
+    public void US06_CerrarCuenta_ReservaNoEnCurso_Conflicto409()
+    {
+        var (id, _) = _banco.CrearReservaEnCurso("Individual", 1);
+        using (var db = BancoF3.Contexto())
+        {
+            db.Reservas.Single(r => r.IdReserva == id).Estado = EstadoReserva.Confirmada;
+            db.SaveChanges();
+        }
+
+        var ex = Assert.Throws<ConflictoDominioException>(() => _banco.Nueva().Facturacion.CerrarCuenta(id, null, new DatosPago()));
+
+        Assert.Equal("La reserva no está en curso", ex.Message);
+        using var v = BancoF3.Contexto();
+        Assert.Empty(v.Facturas.Where(f => f.IdReserva == id));
+    }
+
     [Fact] // [DE#4 CP-R07]
     public void CP_R07_EnCursoCheckOut_SaldoPendiente_Rechazado_SigueEnCurso()
     {
