@@ -1,66 +1,197 @@
 @page
 @model PanelControlModel
 @{
-    ViewData["Title"] = "Distribución de habitaciones"; ViewData["Subtitle"] = "Miércoles, 12 de junio de 2026";
+    ViewData["Title"] = "Distribución de habitaciones";
+    ViewData["Subtitle"] = Model.FechaActual;
+
+    // Etiquetas del Figma por estado del contrato y su clase de color [JIRA US-09 RN1][D-24]
+    static (string Label, string Css) Visual(string estado) => estado switch
+    {
+        "Disponible" => ("Disponible", "available"),
+        "Ocupada" => ("Ocupado", "occupied"),
+        "Reservada" => ("Reservado", "reserved"),
+        "EnLimpieza" => ("En limpieza", "cleaning"),
+        "Mantenimiento" => ("Mantenimiento", "maintenance"),
+        _ => (estado, "available")
+    };
+    static string Iniciales(string nombre) => string.Concat(nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    var estados = new[] { "Disponible", "Ocupada", "Reservada", "EnLimpieza", "Mantenimiento" };
 }
+
+<style>
+    .room-card.maintenance { border-top-color: #8a8f98 }
+    .status.maintenance { background: #eceef1; color: #5b616b }
+    .mapa-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px }
+    .mapa-toolbar label { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center }
+    .mapa-toolbar select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 12px }
+    .mapa-leyenda { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; margin-bottom: 14px }
+    .mapa-leyenda span { display: inline-flex; gap: 5px; align-items: center }
+    .mapa-leyenda i { width: 10px; height: 10px; border-radius: 3px; display: inline-block }
+    .piso-titulo { font: 800 13px "Manrope"; margin: 16px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em }
+    .piso-bloque[hidden], .room-card[hidden] { display: none }
+    .room-card { cursor: pointer }
+    .room-card:focus-visible, .room-card.seleccionada { outline: 2px solid var(--brand); outline-offset: 1px }
+    .mapa-vacio { font-size: 12px; color: var(--muted); padding: 14px 0 }
+    .mapa-panel { position: fixed; top: 0; right: 0; width: 340px; max-width: 100%; height: 100vh; background: #fff; border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgba(20,30,50,.12); padding: 22px; overflow-y: auto; z-index: 40 }
+    .mapa-panel[hidden] { display: none }
+    .mapa-panel h3 { font: 800 22px "Manrope"; margin: 4px 0 10px }
+    .mapa-panel dl { display: grid; grid-template-columns: 90px 1fr; gap: 6px 10px; font-size: 12px; margin: 12px 0 }
+    .mapa-panel dt { color: var(--muted) }
+    .mapa-panel dd { margin: 0; font-weight: 600 }
+    .mapa-panel .acciones { display: grid; gap: 10px; margin-top: 16px }
+    .mapa-panel .acciones form { display: grid; gap: 6px }
+    .mapa-panel input, .mapa-panel select { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 12px; width: 100% }
+    .mapa-panel button[disabled], .mapa-panel a[aria-disabled="true"] { opacity: .45; pointer-events: none }
+    .mapa-panel .cerrar { float: right; background: none; border: 0; font-size: 20px; cursor: pointer }
+    .mapa-panel .primary-button, .mapa-panel .ghost-link { display: block; text-align: center; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 700; background: #fff; cursor: pointer; color: inherit }
+    .mapa-panel .primary-button { background: var(--brand); color: #fff; border-color: var(--brand) }
+    @@media (max-width: 1000px) { .mapa-panel { width: 100%; height: auto; max-height: 75vh; top: auto; bottom: 0; border-left: 0; border-top: 1px solid var(--line) } }
+</style>
+
+@if (TempData["MapaExito"] is string exito)
+{
+    <div class="toast success">✓ @exito</div>
+}
+@if (TempData["MapaError"] is string errorAccion)
+{
+    <div class="toast error" role="alert">@errorAccion</div>
+}
+@if (Model.Error is not null)
+{
+    <div class="toast error" role="alert">@Model.Error</div>
+}
+
 <section class="stats">
-    <div class="stat"><span class="stat-icon">◫</span><span><small>Ocupación hoy</small><strong>78%</strong><em>+6% vs.
-        ayer</em></span></div>
-        <div class="stat"><span class="stat-icon">▱</span><span><small>Disponibles</small><strong>12</strong><em>de 48
-            habitaciones</em></span></div>
-            <div class="stat"><span class="stat-icon"
-                                        style="color:var(--orange);background:#fff3e5">▱</span><span><small>Ocupadas</small><strong>29</strong><em>3
-                salen hoy</em></span></div>
-                <div class="stat"><span class="stat-icon"
-                                            style="color:var(--blue);background:#eaf1fc">▱</span><span><small>Reservadas</small><strong>7</strong><em>5
-                    llegan hoy</em></span></div>
-                </section>
-                <div class="dashboard-grid">
-                    <section class="panel">
-                        <div class="panel-header">
-                            <div>
-                                <h2>Mapa de habitaciones</h2>
-                                <p>Estado operativo del hotel en tiempo real.</p>
-                            </div><a class="text-link" asp-page="/Ventanas/Habitaciones">Ver inventario →</a>
-                        </div>
-                        <div class="room-grid">
-                            @foreach (var room in new[] { ("101", "Suite Ejecutiva", "Ocupado", "occupied", "$320.000"), ("102", "Doble Clásica", "Disponible", "available", "$185.000"), ("103", "Individual", "Reservado", "reserved",
-     "$120.000"), ("104", "Doble Clásica", "En limpieza", "cleaning", "$185.000"), ("201", "Suite Ejecutiva",
- "Disponible", "available", "$320.000"), ("202", "Doble Clásica", "Ocupado", "occupied", "$185.000"), ("203",
-      "Individual", "Disponible", "available", "$120.000"), ("204", "Doble Clásica", "Reservado", "reserved",
-           "$185.000") })
-                            {
-                                <article class="room-card @room.Item4">
-                                    <div class="room-top"><span><small>Habitación</small><strong>@room.Item1</strong></span><span
-                                        class="status @room.Item4">@room.Item3</span></div>
-                                        <div class="room-type">▱ @room.Item2</div>
-                                        <div class="room-price">@room.Item5 <small>COP / noche</small></div>
-                                    </article>
-                                }
-                            </div>
-                        </section>
-                        <aside class="schedule">
-                            <div class="panel-header">
-                                <h3>Actividad de hoy</h3><a class="text-link" asp-page="/Ventanas/Reservas">Ver agenda</a>
-                            </div>
-                            <div class="schedule-title"><span>Próximos check-ins</span><span>3 llegadas</span></div>
-                            @foreach (var item in new[] { ("09:30", "VR", "Valentina Ríos", "Hab. 201 · 3 noches"), ("12:00", "SG",
-        "Sebastián Gil", "Hab. 103 · 2 noches"), ("15:30", "AM", "Andrea Moreno", "Hab. 304 · 4 noches") })
-                            {
-                                <div class="schedule-row">
-                                    <span class="schedule-time">@item.Item1</span><span
-                                    class="avatar small">@item.Item2</span><span><strong>@item.Item3</strong><small>@item.Item4</small></span><span
-                                    class="schedule-action">✓</span>
-                                </div>
-                            }
-                            <div class="schedule-title"><span>Próximos check-outs</span><span>2 salidas</span></div>
-                            @foreach (var item in new[] { ("11:00", "LC", "Laura Castillo", "Hab. 302 · Pendiente"), ("12:00", "TR", "Tomás Restrepo", "Hab. 104 · Pagado") })
-                            {
-                                <div class="schedule-row"><span class="schedule-time">@item.Item1</span><span
-                                    class="avatar small">@item.Item2</span><span><strong>@item.Item3</strong><small>@item.Item4</small></span><span
-                                    class="schedule-action out">↗</span></div>
-                                }
-                                <div class="notice">♧ <span><b>Recordatorio operativo</b><small>2 habitaciones esperan
-                                    inspección.</small></span></div>
-                                </aside>
-                            </div>
+    <div class="stat"><span class="stat-icon">◫</span><span><small>Ocupación hoy</small><strong>@Model.OcupacionPorcentaje%</strong><em>@Model.Ocupadas de @Model.Total
+        habitaciones</em></span></div>
+    <div class="stat"><span class="stat-icon">▱</span><span><small>Disponibles</small><strong>@Model.Disponibles</strong><em>de @Model.Total
+        habitaciones</em></span></div>
+    <div class="stat"><span class="stat-icon" style="color:var(--orange);background:#fff3e5">▱</span><span><small>Ocupadas</small><strong>@Model.Ocupadas</strong><em>@Model.SalidasHoy.Count salen hoy</em></span></div>
+    <div class="stat"><span class="stat-icon" style="color:var(--blue);background:#eaf1fc">▱</span><span><small>Reservadas</small><strong>@Model.Reservadas</strong><em>@Model.LlegadasHoy.Count llegan hoy</em></span></div>
+</section>
+<div class="dashboard-grid">
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Mapa de habitaciones</h2>
+                <p>Estado operativo del hotel; se carga al abrir y con «Actualizar».</p>
+            </div>
+            <span>
+                <a class="text-link" id="mapa-actualizar" asp-page="/Ventanas/PanelControl">↻ Actualizar</a> ·
+                <a class="text-link" asp-page="/Ventanas/Habitaciones">Ver inventario →</a>
+            </span>
+        </div>
+
+        <div class="mapa-leyenda" aria-label="Leyenda de colores">
+            <span><i style="background:var(--green)"></i>Disponible</span>
+            <span><i style="background:var(--orange)"></i>Ocupada</span>
+            <span><i style="background:var(--pink)"></i>En limpieza</span>
+            <span><i style="background:var(--blue)"></i>Reservada</span>
+            <span><i style="background:#8a8f98"></i>Mantenimiento</span>
+        </div>
+
+        <div class="mapa-toolbar">
+            <label>Piso
+                <select id="filtro-piso">
+                    <option value="">Todos</option>
+                    <option value="1">Piso 1</option>
+                    <option value="2">Piso 2</option>
+                    <option value="3">Piso 3</option>
+                </select>
+            </label>
+            <label>Estado
+                <select id="filtro-estado">
+                    <option value="">Todos</option>
+                    @foreach (var e in estados)
+                    {
+                        <option value="@e">@Visual(e).Label</option>
+                    }
+                </select>
+            </label>
+            <small id="mapa-contador" style="color:var(--muted)" aria-live="polite"></small>
+        </div>
+
+        <div id="mapa-habitaciones">
+            @foreach (var piso in Model.Habitaciones.GroupBy(h => h.Piso).OrderBy(g => g.Key))
+            {
+                <div class="piso-bloque" data-piso-bloque="@piso.Key">
+                    <div class="piso-titulo">Piso @piso.Key</div>
+                    <div class="room-grid">
+                        @foreach (var h in piso.OrderBy(x => x.Numero))
+                        {
+                            var v = Visual(h.Estado);
+                            <article class="room-card @v.Css" tabindex="0" role="button" aria-label="Habitación @h.Numero, @v.Label"
+                                     data-numero="@h.Numero" data-piso="@h.Piso" data-estado="@h.Estado" data-estado-label="@v.Label" data-tipo="@h.Tipo"
+                                     data-precio="@h.PrecioNoche.ToString("N0", new System.Globalization.CultureInfo("es-CO"))"
+                                     data-motivo="@h.MotivoMantenimiento"
+                                     data-id-reserva="@h.Reserva?.IdReserva" data-huesped="@h.Reserva?.Huesped"
+                                     data-llegada="@h.Reserva?.FechaLlegada.ToString("dd/MM/yyyy")"
+                                     data-salida="@h.Reserva?.FechaSalida.ToString("dd/MM/yyyy")">
+                                <div class="room-top"><span><small>Habitación</small><strong>@h.Numero</strong></span><span class="status @v.Css">@v.Label</span></div>
+                                <div class="room-type">▱ @h.Tipo</div>
+                                <div class="room-price">$@h.PrecioNoche.ToString("N0", new System.Globalization.CultureInfo("es-CO")) <small>COP / noche</small></div>
+                            </article>
+                        }
+                    </div>
+                </div>
+            }
+            @if (Model.Habitaciones.Count == 0 && Model.Error is null)
+            {
+                <p class="mapa-vacio">No hay habitaciones registradas.</p>
+            }
+            <p class="mapa-vacio" id="mapa-sin-resultados" hidden>Ninguna habitación coincide con el filtro.</p>
+        </div>
+    </section>
+    <aside class="schedule">
+        <div class="panel-header">
+            <h3>Actividad de hoy</h3><a class="text-link" asp-page="/Ventanas/Reservas">Ver agenda</a>
+        </div>
+        <div class="schedule-title"><span>Próximos check-ins</span><span>@Model.LlegadasHoy.Count @(Model.LlegadasHoy.Count == 1 ? "llegada" : "llegadas")</span></div>
+        @foreach (var h in Model.LlegadasHoy)
+        {
+            <div class="schedule-row">
+                <span class="schedule-time">Hoy</span><span class="avatar small">@Iniciales(h.Reserva!.Huesped)</span><span><strong>@h.Reserva.Huesped</strong><small>Hab. @h.Numero · @((h.Reserva.FechaSalida.Date - h.Reserva.FechaLlegada.Date).Days) noches</small></span><span class="schedule-action">✓</span>
+            </div>
+        }
+        <div class="schedule-title"><span>Próximos check-outs</span><span>@Model.SalidasHoy.Count @(Model.SalidasHoy.Count == 1 ? "salida" : "salidas")</span></div>
+        @foreach (var h in Model.SalidasHoy)
+        {
+            <div class="schedule-row"><span class="schedule-time">Hoy</span><span class="avatar small">@Iniciales(h.Reserva!.Huesped)</span><span><strong>@h.Reserva.Huesped</strong><small>Hab. @h.Numero · <a class="text-link" href="/Ventanas/Facturacion?id=@h.Reserva.IdReserva#detalle">Check-out</a></small></span><span class="schedule-action out">↗</span></div>
+        }
+        <div class="notice">♧ <span><b>Recordatorio operativo</b><small>@Model.EnLimpieza @(Model.EnLimpieza == 1 ? "habitación espera" : "habitaciones esperan")
+            limpieza.</small></span></div>
+    </aside>
+</div>
+
+<aside class="mapa-panel" id="mapa-panel" hidden aria-label="Detalle de la habitación">
+    <button type="button" class="cerrar" id="mapa-cerrar" aria-label="Cerrar panel">×</button>
+    <small style="color:var(--muted)">Habitación</small>
+    <h3 id="panel-numero"></h3>
+    <span class="status" id="panel-estado"></span>
+    <dl>
+        <dt>Tipo</dt><dd id="panel-tipo"></dd>
+        <dt>Tarifa</dt><dd id="panel-precio"></dd>
+        <dt>Huésped</dt><dd id="panel-huesped"></dd>
+        <dt>Llegada</dt><dd id="panel-llegada"></dd>
+        <dt>Salida prevista</dt><dd id="panel-salida"></dd>
+        <dt id="panel-motivo-t">Motivo</dt><dd id="panel-motivo"></dd>
+    </dl>
+    <div class="acciones">
+        <form method="post" asp-page-handler="CheckIn" id="form-checkin">
+            <input type="hidden" name="idReserva" id="ci-reserva" />
+            <input type="hidden" name="numero" id="ci-numero" />
+            <input type="text" name="documento" id="ci-documento" placeholder="Documento del huésped (confirmar)" autocomplete="off" />
+            <button type="submit" class="primary-button" id="btn-checkin">Check-in</button>
+        </form>
+        <a class="ghost-link" id="btn-checkout" href="#">Check-out</a>
+        <form method="post" asp-page-handler="CambiarEstado" id="form-estado">
+            <input type="hidden" name="numero" id="ce-numero" />
+            <select name="nuevoEstado" id="ce-estado">
+                <option value="Disponible">Disponible</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+            </select>
+            <input type="text" name="motivo" id="ce-motivo" placeholder="Motivo (mínimo 10 caracteres si es mantenimiento)" />
+            <button type="submit" class="ghost-link">Cambiar estado</button>
+        </form>
+    </div>
+</aside>

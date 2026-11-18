@@ -218,3 +218,68 @@
         roomType.addEventListener("change", updatePreview);
     }
 })();
+
+// Mapa de habitaciones (US-09, DS5): filtros por piso y estado y panel lateral, todo en el cliente sobre los datos ya cargados.
+(function () {
+    const mapa = document.getElementById("mapa-habitaciones");
+    if (!mapa) return;
+    const tarjetas = [...mapa.querySelectorAll(".room-card")];
+    const fPiso = document.getElementById("filtro-piso");
+    const fEstado = document.getElementById("filtro-estado");
+    const contador = document.getElementById("mapa-contador");
+    const sinResultados = document.getElementById("mapa-sin-resultados");
+    const panel = document.getElementById("mapa-panel");
+    const $ = id => document.getElementById(id);
+
+    function actualizarVistaLocal() {
+        let visibles = 0;
+        tarjetas.forEach(t => {
+            const ok = (!fPiso.value || t.dataset.piso === fPiso.value) && (!fEstado.value || t.dataset.estado === fEstado.value);
+            t.hidden = !ok;
+            if (ok) visibles++;
+        });
+        mapa.querySelectorAll(".piso-bloque").forEach(b => { b.hidden = !b.querySelector(".room-card:not([hidden])"); });
+        sinResultados.hidden = visibles !== 0 || tarjetas.length === 0;
+        contador.textContent = visibles + " de " + tarjetas.length + " habitaciones";
+    }
+
+    function abrirPanel(t) {
+        const d = t.dataset;
+        tarjetas.forEach(x => x.classList.toggle("seleccionada", x === t));
+        $("panel-numero").textContent = d.numero;
+        const est = $("panel-estado");
+        est.textContent = d.estadoLabel;
+        est.className = "status " + [...t.classList].find(c => ["available", "occupied", "reserved", "cleaning", "maintenance"].includes(c));
+        $("panel-tipo").textContent = d.tipo;
+        $("panel-precio").textContent = "$" + d.precio + " / noche";
+        const hayReserva = !!d.idReserva;
+        $("panel-huesped").textContent = hayReserva ? d.huesped : "—";
+        $("panel-llegada").textContent = hayReserva ? d.llegada : "—";
+        $("panel-salida").textContent = hayReserva ? d.salida : "—";
+        const motivo = d.estado === "Mantenimiento" && d.motivo;
+        $("panel-motivo").textContent = motivo ? d.motivo : "";
+        $("panel-motivo").hidden = $("panel-motivo-t").hidden = !motivo;
+
+        // Accesos rápidos: reutilizan F2 (check-in), F3 (check-out) y F1 (cambiar estado); sin reserva activa se deshabilitan.
+        const puedeCheckIn = hayReserva && d.estado === "Reservada";
+        const puedeCheckOut = hayReserva && d.estado === "Ocupada";
+        $("ci-reserva").value = d.idReserva || "";
+        $("ci-numero").value = d.numero;
+        $("ci-documento").hidden = !puedeCheckIn;
+        $("btn-checkin").disabled = !puedeCheckIn;
+        const out = $("btn-checkout");
+        out.href = puedeCheckOut ? "/Ventanas/Facturacion?id=" + d.idReserva + "#detalle" : "#";
+        out.setAttribute("aria-disabled", puedeCheckOut ? "false" : "true");
+        $("ce-numero").value = d.numero;
+        panel.hidden = false;
+    }
+
+    fPiso.addEventListener("change", actualizarVistaLocal);
+    fEstado.addEventListener("change", actualizarVistaLocal);
+    tarjetas.forEach(t => {
+        t.addEventListener("click", () => abrirPanel(t));
+        t.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrirPanel(t); } });
+    });
+    $("mapa-cerrar").addEventListener("click", () => { panel.hidden = true; tarjetas.forEach(x => x.classList.remove("seleccionada")); });
+    actualizarVistaLocal();
+})();
