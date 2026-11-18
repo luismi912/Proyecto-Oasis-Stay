@@ -58,14 +58,29 @@ public interface IRepositorioHuespedes
     void Guardar(Cliente cliente);
 }
 
-/// <summary>Consumos (servicios) [CTR §5].</summary>
-public interface IRepositorioConsumos { IReadOnlyList<Servicio> ConsultarServicios(); }
+/// <summary>Consumos (servicios) [CTR §5]; F3 añade los consumos por reserva [actividad-4][D-29].</summary>
+public interface IRepositorioConsumos
+{
+    IReadOnlyList<Servicio> ConsultarServicios();
+    Servicio? BuscarServicio(string nombre);
+    IReadOnlyList<ConsumoReserva> ConsultarPorReserva(int idReserva);
+    void Agregar(ConsumoReserva consumo);
+}
 
-/// <summary>[CTR §5]</summary>
-public interface IFacturaRepository { void Guardar(Factura factura); }
+/// <summary>[CTR §5] La factura emitida es inmutable [JIRA US-06 RN3].</summary>
+public interface IFacturaRepository
+{
+    void Guardar(Factura factura);
+    Factura? BuscarPorId(int idFactura);
+    Factura? BuscarPorReserva(int idReserva);
+}
 
-/// <summary>[CTR §5]</summary>
-public interface IRepositorioPagos { void Guardar(Pago pago); }
+/// <summary>[CTR §5][D-33]</summary>
+public interface IRepositorioPagos
+{
+    void Guardar(Pago pago);
+    IReadOnlyList<Pago> ConsultarPorReserva(int idReserva);
+}
 
 /// <summary>[CTR §5][D-09]</summary>
 public interface IGestionReservas

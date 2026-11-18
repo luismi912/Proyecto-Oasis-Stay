@@ -11,7 +11,30 @@ namespace Front_end.Pages
         private const string TextoUpgrade = "La habitación nueva es de categoría superior (Upgrade). Confirme para continuar."; // [D-32]
         private readonly ReservasApi _api;
         private readonly HabitacionesApi _habitaciones;
-        public ReservasModel(ReservasApi api, HabitacionesApi habitaciones) { _api = api; _habitaciones = habitaciones; }
+        private readonly FacturacionApi _facturacion;
+        public ReservasModel(ReservasApi api, HabitacionesApi habitaciones, FacturacionApi facturacion)
+        { _api = api; _habitaciones = habitaciones; _facturacion = facturacion; }
+
+        /// <summary>Estado de pago y total por reserva, calculados por F3 (<c>GET /api/facturacion/{id}/totales</c>) [E2 §6].</summary>
+        public IReadOnlyDictionary<int, (string EstadoPago, decimal Total)> Cobros { get; private set; } = new Dictionary<int, (string, decimal)>();
+
+        /// <summary>Resumen del modal: subtotal, IVA y total los calcula la API [JIRA US-05 ESC3][E2 §6 SRP].</summary>
+        public async Task<IActionResult> OnGetCotizacionAsync(int numeroHabitacion, DateTime fechaInicio, DateTime fechaFin)
+        {
+            try
+            {
+                var c = await _facturacion.CotizarAsync(new { numeroHabitacion, fechaInicio, fechaFin });
+                return new JsonResult(c);
+            }
+            catch (ApiException ex)
+            {
+                return new JsonResult(new { detail = ex.Message }) { StatusCode = (int)ex.Estado };
+            }
+            catch (HttpRequestException)
+            {
+                return new JsonResult(new { detail = "No se pudo calcular la cotización." }) { StatusCode = 502 };
+            }
+        }
 
         /// <summary>Tipos para el filtro de categoría de la consulta de disponibilidad [JIRA US-01].</summary>
         public IReadOnlyList<TipoHabitacionDto> Tipos { get; private set; } = Array.Empty<TipoHabitacionDto>();
@@ -137,6 +160,17 @@ namespace Front_end.Pages
         {
             try { Reservas = await _api.ListarAsync(); }
             catch (ApiException ex) { TempData["ReservationError"] ??= ex.Message; }
+            var cobros = new Dictionary<int, (string, decimal)>();
+            foreach (var r in Reservas.Where(r => r.Estado is "Confirmada" or "EnCurso" or "Finalizada"))
+            {
+                try
+                {
+                    var t = await _facturacion.TotalesAsync(r.IdReserva);
+                    cobros[r.IdReserva] = (t.Total > 0 && t.Saldo == 0 ? "Pagado" : "Pendiente", t.Total);
+                }
+                catch (ApiException) { /* sin dato de cobro */ }
+            }
+            Cobros = cobros;
             try { Tipos = await _habitaciones.TiposAsync(); }
             catch (ApiException) { /* sin filtro de categoría */ }
         }

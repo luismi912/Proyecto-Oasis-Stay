@@ -31,7 +31,7 @@ public class Cliente
     }
 }
 
-/// <summary>Reserva [DC][DE#4]. Cuerpos en F2/F3/F4.</summary>
+/// <summary>Reserva [DC][DE#4]. F2 implementa el check-in; F3 el total y el check-out.</summary>
 public class Reserva
 {
     public int IdReserva { get; set; }
@@ -46,8 +46,12 @@ public class Reserva
     public Habitacion? Habitacion { get; set; }
     public List<Servicio> Servicios { get; set; } = new();
     public List<Pago> Pagos { get; set; } = new();
+    /// <summary>Consumos guardados; con ellos se reconstruye la cadena del Decorator [CTR §4 Decorator].</summary>
+    public List<ConsumoReserva> Consumos { get; set; } = new();
 
-    public decimal CalcularTotal() => throw new NotImplementedException("F3");
+    /// <summary>Total con IVA de la estadía y sus consumos [DC][E1 RF-05][JIRA US-05 RN2]; requiere <see cref="Habitacion"/> con su tipo.</summary>
+    public decimal CalcularTotal()
+        => ArmadorCuenta.Armar((FechaFin.Date - FechaInicio.Date).Days, Habitacion?.Tipo?.CalcularPrecioNoche() ?? 0m, Consumos, true).CalcularCosto();
     public void CancelarReserva() => throw new NotImplementedException("F2");
     /// <summary>Confirmada → EnCurso [DE#4]; las guardas de documento y fecha están en la sobrecarga [D-31].</summary>
     public void HacerCheckIn()
@@ -67,7 +71,13 @@ public class Reserva
         HacerCheckIn();
         return ResultadoOperacion.Exitosa();
     }
-    public void HacerCheckOut() => throw new NotImplementedException("F4");
+
+    /// <summary>EnCurso → Finalizada al archivar el check-out [DE#4][JIRA US-06 RN2]; el saldo $0 se verifica antes en el cierre de cuenta.</summary>
+    public void HacerCheckOut()
+    {
+        if (Estado != EstadoReserva.EnCurso) throw new ConflictoDominioException(MensajesFacturacion.ReservaNoEnCurso);
+        Estado = EstadoReserva.Finalizada;
+    }
 }
 
 /// <summary>Tipo de habitación [DC][D-29].</summary>

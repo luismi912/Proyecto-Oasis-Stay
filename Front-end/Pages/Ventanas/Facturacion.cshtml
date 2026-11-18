@@ -1,8 +1,45 @@
 @page
 @model FacturacionModel
+@using System.Globalization
 @{
     ViewData["Title"] = "Facturación y check-out"; ViewData["Subtitle"] = "Cierre de estancia y documento fiscal";
+    var co = CultureInfo.GetCultureInfo("es-CO");
+    string D(decimal v) => FacturacionModel.Dinero(v);
 }
+@if (TempData["FacturacionOk"] is string ok)
+{
+    <div class="toast success" id="toast-ok">✓ @ok</div>
+}
+@if (TempData["FacturacionError"] is string error)
+{
+    <div class="toast error" id="toast-error" role="alert">@error</div>
+}
+<style>
+    .fact-panel { background: #fff; border-radius: 18px; padding: 22px 24px; margin-top: 20px; box-shadow: 0 1px 3px rgba(16,24,40,.08); }
+    .fact-panel h2 { margin: 0 0 4px; font-size: 1.1rem; }
+    .fact-panel p.sub { margin: 0 0 14px; color: #667085; }
+    .fact-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; align-items: start; }
+    @@media (max-width: 900px) { .fact-cols { grid-template-columns: 1fr; } }
+    .fact-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    .fact-table th, .fact-table td { padding: 8px 6px; border-bottom: 1px solid #eef0f3; text-align: left; font-size: .92rem; }
+    .fact-table td.num, .fact-table th.num { text-align: right; }
+    .fact-line { display: flex; justify-content: space-between; padding: 6px 0; }
+    .fact-line.total { font-weight: 700; font-size: 1.05rem; border-top: 1px solid #eef0f3; margin-top: 4px; padding-top: 10px; }
+    .fact-line.saldo b { color: #b54708; }
+    .fact-line.saldo.cero b { color: #067647; }
+    .fact-form { display: grid; gap: 10px; margin-top: 10px; }
+    .fact-form label { display: grid; gap: 4px; font-size: .85rem; color: #475467; }
+    .fact-form input, .fact-form select { padding: 9px 10px; border: 1px solid #d0d5dd; border-radius: 10px; font: inherit; }
+    .fact-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .fact-row > * { flex: 1 1 120px; }
+    .fact-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    .fact-hint { background: #fffaeb; color: #93370d; border-radius: 10px; padding: 8px 12px; font-size: .85rem; margin: 8px 0; }
+    .fact-ok { background: #ecfdf3; border: 1px solid #abefc6; }
+    .fact-pdf { width: 100%; height: 520px; border: 1px solid #eaecf0; border-radius: 12px; margin-top: 12px; }
+    .fact-form [data-metodo] { display: none; }
+    .fact-form [data-metodo].visible { display: grid; }
+</style>
+
 <div class="stats">
     <div class="stat"><span class="stat-icon">▤</span><span><small>Ingresos del
         mes</small><strong>$48,2M</strong><em>+12,4% vs. anterior</em></span></div>
@@ -11,6 +48,19 @@
             <div class="stat"><span class="stat-icon">◷</span><span><small>Por cobrar</small><strong>$2,4M</strong><em
                 style="color:var(--orange)">14 cuentas abiertas</em></span></div>
             </div>
+
+@if (Model.FacturaId is int facturaId)
+{
+    <section class="fact-panel fact-ok" id="factura-emitida">
+        <h2>Factura generada con éxito</h2>
+        <p class="sub">Folio <strong id="folio-emitido">@(Model.Folio?.ToString("D6") ?? "")</strong> · la habitación pasó a «En limpieza» y la reserva quedó finalizada.</p>
+        <div class="fact-actions">
+            <a class="primary-button" id="descargar-pdf" href="?handler=Pdf&idFactura=@facturaId&descargar=true">Descargar PDF</a>
+        </div>
+        <iframe class="fact-pdf" title="Factura" src="?handler=Pdf&idFactura=@facturaId"></iframe>
+    </section>
+}
+
             <section class="table-card">
                 <div class="table-head">
                     <div>
@@ -29,16 +79,131 @@
                             <th>Acción</th>
                         </tr>
                     </thead>
-                    <tbody>@foreach (var item in new[] { ("Laura Castillo","302","Hoy, 11:00 AM","Pendiente","$660.450"),("Tomás Restrepo","104","Hoy, 12:00 PM","Pagado","$440.300"),("Mariana Gómez","301","Mañana, 12:00 PM","Pagado","$1.523.200") }) {
+                    <tbody>
+                    @foreach (var item in Model.Pendientes)
+                    {
                         <tr>
-                            <td><strong>@item.Item1</strong></td>
-                            <td>Hab. @item.Item2</td>
-                            <td>@item.Item3</td>
-                            <td><span class="payment @(item.Item4 == "Pendiente" ? "pending" : "")">@item.Item4</span></td>
-                            <td><strong>@item.Item5</strong></td>
-                            <td><a class="text-link" href="#">Ver detalle →</a></td>
+                            <td><strong>@item.Huesped</strong></td>
+                            <td>Hab. @item.NumeroHabitacion</td>
+                            <td>@item.FechaFin.ToString("dd MMM", co), 12:00 PM</td>
+                            <td><span class="payment @(item.EstadoPago == "Pendiente" ? "pending" : "")">@item.EstadoPago</span></td>
+                            <td><strong>@D(item.Total)</strong></td>
+                            <td><a class="text-link" href="?id=@item.IdReserva#detalle">Ver detalle →</a></td>
                         </tr>
+                    }
+                    @if (Model.Pendientes.Count == 0)
+                    {
+                        <tr><td colspan="6">No hay check-outs pendientes.</td></tr>
                     }
                 </tbody>
             </table>
         </section>
+
+@if (Model.Detalle is { } d)
+{
+    var enCurso = d.EstadoReserva == "EnCurso";
+    <section class="fact-panel" id="detalle">
+        <h2>Cuenta de @d.Huesped · Hab. @d.NumeroHabitacion</h2>
+        <p class="sub">Reserva #@d.IdReserva · @d.TipoHabitacion · @d.FechaInicio.ToString("dd MMM", co) — @d.FechaFin.ToString("dd MMM", co) (@d.Noches @(d.Noches == 1 ? "noche" : "noches"))</p>
+        <div class="fact-cols">
+            <div>
+                <table class="fact-table" id="tabla-cuenta">
+                    <thead><tr><th>Concepto</th><th class="num">Cant.</th><th class="num">Valor unitario</th><th class="num">Subtotal</th></tr></thead>
+                    <tbody>
+                        <tr><td>Estadía</td><td class="num">@d.Noches</td><td class="num">@D(d.Tarifa)</td><td class="num">@D(d.Noches * d.Tarifa)</td></tr>
+                        @foreach (var c in d.Consumos)
+                        {
+                            <tr><td>@c.Concepto</td><td class="num">@c.Cantidad</td><td class="num">@D(c.ValorUnitario)</td><td class="num">@D(c.SubTotal)</td></tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="fact-line"><span>Subtotal</span><b id="det-subtotal">@D(d.Subtotal)</b></div>
+                <div class="fact-line"><span>IVA (19%)</span><b id="det-iva">@D(d.Iva)</b></div>
+                <div class="fact-line total"><span>Total</span><b id="det-total">@D(d.Total)</b></div>
+                <div class="fact-line"><span>Pagado</span><b id="det-pagado">@D(d.Pagado)</b></div>
+                <div class="fact-line saldo @(d.Saldo == 0 ? "cero" : "")"><span>Saldo pendiente</span><b id="det-saldo">@D(d.Saldo)</b></div>
+
+                @if (d.Pagos.Count > 0)
+                {
+                    <h3 style="margin:18px 0 6px;font-size:.95rem">Recibos de caja</h3>
+                    <table class="fact-table" id="tabla-recibos">
+                        <thead><tr><th>Recibo</th><th>Método</th><th class="num">Monto</th><th class="num">Vuelto</th></tr></thead>
+                        <tbody>
+                            @foreach (var p in d.Pagos)
+                            {
+                                <tr><td>#@p.IdPago</td><td>@p.Metodo</td><td class="num">@D(p.Monto)</td><td class="num">@(p.Vuelto is > 0 ? D(p.Vuelto.Value) : "—")</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            @if (enCurso)
+            {
+                <div>
+                    <h3 style="margin:0 0 4px;font-size:.95rem">Agregar consumo</h3>
+                    <form method="post" asp-page-handler="Consumo" class="fact-form" id="form-consumo">
+                        <input type="hidden" name="id" value="@d.IdReserva" />
+                        <div class="fact-row">
+                            <label>Servicio<select name="concepto"><option value="Minibar">Minibar</option></select></label>
+                            <label>Cantidad<input name="cantidad" type="number" min="1" value="1" /></label>
+                            <label>Valor unitario<input name="monto" type="number" min="0" step="0.01" placeholder="30000" /></label>
+                        </div>
+                        <div class="fact-actions"><button class="secondary-button" type="submit">＋ Agregar consumo</button></div>
+                    </form>
+                    @if (!d.SalidaTardia)
+                    {
+                        @if (d.SalidaTardiaSugerida)
+                        {
+                            <div class="fact-hint" id="aviso-late">La hora actual pasó las 12:00: corresponde el recargo de salida tardía.</div>
+                        }
+                        <form method="post" asp-page-handler="SalidaTardia" class="fact-form">
+                            <input type="hidden" name="id" value="@d.IdReserva" />
+                            <div class="fact-actions"><button class="secondary-button" type="submit" id="btn-late">Registrar salida tardía (+$40.000)</button></div>
+                        </form>
+                    }
+
+                    <h3 id="pagos" style="margin:22px 0 4px;font-size:.95rem">Pago y check-out</h3>
+                    <form method="post" class="fact-form" id="form-pago">
+                        <input type="hidden" name="id" value="@d.IdReserva" />
+                        <label>Método de pago
+                            <select name="metodoPago" id="metodoPago">
+                                <option value="">Seleccione método…</option>
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="TARJETA_CREDITO">Tarjeta de crédito</option>
+                                <option value="TARJETA_DEBITO">Tarjeta de débito</option>
+                                <option value="TRANSFERENCIA">Transferencia</option>
+                            </select>
+                        </label>
+                        <label>Monto a abonar<input name="montoPago" id="montoPago" type="number" min="0" step="0.01" value="@d.Saldo.ToString("0.##", CultureInfo.InvariantCulture)" /></label>
+                        <label data-metodo="EFECTIVO">Monto recibido<input name="montoRecibido" type="number" min="0" step="0.01" /></label>
+                        <label data-metodo="TARJETA_CREDITO TARJETA_DEBITO">Número de aprobación<input name="autorizacion" placeholder="Código del datáfono" /></label>
+                        <label data-metodo="TRANSFERENCIA">Referencia bancaria<input name="referencia" placeholder="TRF-0000" /></label>
+                        <div class="fact-actions">
+                            <button class="secondary-button" type="submit" asp-page-handler="Pago" id="btn-pago">Registrar pago</button>
+                            <button class="primary-button" type="submit" asp-page-handler="Checkout" id="btn-checkout">✓ Completar check-out</button>
+                        </div>
+                    </form>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@section Scripts {
+<script>
+    (function () {
+        var sel = document.getElementById('metodoPago');
+        if (!sel) return;
+        function mostrar() {
+            document.querySelectorAll('#form-pago [data-metodo]').forEach(function (el) {
+                el.classList.toggle('visible', sel.value !== '' && el.getAttribute('data-metodo').split(' ').indexOf(sel.value) >= 0);
+            });
+        }
+        sel.addEventListener('change', mostrar);
+        mostrar();
+        document.querySelectorAll('.toast').forEach(function (t) { setTimeout(function () { t.style.display = 'none'; }, 9000); });
+        if (location.hash) { var el = document.querySelector(location.hash); if (el) el.scrollIntoView(); }
+    })();
+</script>
+}

@@ -3,7 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using OasisStay.Aplicacion;
+using OasisStay.Dominio;
+using OasisStay.Infraestructura.Facturacion;
 using OasisStay.Infraestructura.Identidad;
 using OasisStay.Infraestructura.Persistencia;
 using OasisStay.Infraestructura.Repositorios;
@@ -50,6 +53,19 @@ public static class ExtensionesDi
         s.AddScoped<ISemillaDemo, SemillaDemoF1>();
         s.AddScoped<IRegistroReservas>(sp => (GestionReservas)sp.GetRequiredService<IGestionReservas>());
         s.AddScoped<ISemillaDemo, SemillaDemoF2>(); // [D-39]
+        // F3 [CTR §4 Strategy/Facade][CTR §5][D-04][D-10][D-13]
+        s.AddScoped<IEstrategiaPago, PagoEfectivo>();
+        s.AddScoped<IEstrategiaPago, PagoTarjeta>();
+        s.AddScoped<IEstrategiaPago, PagoTransferencia>();
+        s.AddScoped<ProcesadorPagos>();
+        s.AddScoped<MotorCuentasFacturacion>();
+        s.AddScoped(sp => sp.GetRequiredService<IOptions<PoliticasOpciones>>().Value);
+        s.AddScoped<IGestionPagos, GestionPagos>();
+        s.AddScoped<IServicioFacturacion, ServicioFacturacion>();
+        s.AddScoped<IServicioHabitacion, ServicioHabitacion>();
+        s.AddScoped<ICheckoutFacade, CheckoutFacade>();
+        s.AddSingleton<IGeneradorFacturaPdf, FacturaPdfGenerator>();
+        s.AddScoped<ISemillaDemo, SemillaDemoF3>(); // [D-39]
         s.AddScoped<EjecutorSemillaDemo>();
         return s;
     }

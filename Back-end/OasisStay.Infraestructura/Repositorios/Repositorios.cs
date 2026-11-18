@@ -115,31 +115,57 @@ public class RepositorioConsumos : IRepositorioConsumos
     private readonly OasisStayDbContext _db;
     public RepositorioConsumos(OasisStayDbContext db) => _db = db;
     public IReadOnlyList<Servicio> ConsultarServicios() => _db.Servicios.OrderBy(s => s.Nombre).ToList();
+    public Servicio? BuscarServicio(string nombre) => _db.Servicios.FirstOrDefault(s => s.Nombre == nombre);
+    public IReadOnlyList<ConsumoReserva> ConsultarPorReserva(int idReserva)
+        => _db.ConsumosReserva.Where(c => c.IdReserva == idReserva).OrderBy(c => c.IdConsumo).ToList();
+    public void Agregar(ConsumoReserva consumo)
+    {
+        _db.ConsumosReserva.Add(consumo);
+        _db.SaveChanges();
+    }
 }
 
+/// <summary>La factura emitida es inmutable: no se actualiza ni se emite una segunda por reserva [JIRA US-06 RN3 y riesgo].</summary>
 public class FacturaRepository : IFacturaRepository
 {
     private readonly OasisStayDbContext _db;
     public FacturaRepository(OasisStayDbContext db) => _db = db;
+
     public void Guardar(Factura factura)
     {
-        if (_db.Entry(factura).State == EntityState.Detached) _db.Facturas.Update(factura);
-        _db.SaveChanges();
+        if (factura.IdFactura != 0) throw new ConflictoDominioException("La factura emitida no se puede modificar");
+        _db.Facturas.Add(factura);
+        try { _db.SaveChanges(); }
+        catch (DbUpdateException) when (_db.Facturas.Any(f => f.IdReserva == factura.IdReserva && f.IdFactura != factura.IdFactura))
+        {
+            _db.Entry(factura).State = EntityState.Detached;
+            throw new ConflictoDominioException(MensajesFacturacion.YaFacturada);
+        }
     }
+
+    public Factura? BuscarPorId(int idFactura) => _db.Facturas.Include(f => f.Detalles).FirstOrDefault(f => f.IdFactura == idFactura);
+    public Factura? BuscarPorReserva(int idReserva) => _db.Facturas.Include(f => f.Detalles).FirstOrDefault(f => f.IdReserva == idReserva);
 }
 
 public class RepositorioPagos : IRepositorioPagos
 {
     private readonly OasisStayDbContext _db;
     public RepositorioPagos(OasisStayDbContext db) => _db = db;
+
     public void Guardar(Pago pago)
     {
-        if (_db.Entry(pago).State == EntityState.Detached) _db.Pagos.Update(pago);
+        if (_db.Entry(pago).State == EntityState.Detached)
+        {
+            if (pago.IdPago == 0) _db.Pagos.Add(pago); else _db.Pagos.Update(pago);
+        }
         _db.SaveChanges();
     }
+
+    public IReadOnlyList<Pago> ConsultarPorReserva(int idReserva)
+        => _db.Pagos.Where(p => p.IdReserva == idReserva).OrderBy(p => p.IdPago).ToList();
 }
 
-/// <summary>Solo inserción [D-23][JIRA US-07 RN2]. Archivar es de F4.</summary>
+/// <summary>Solo inserción [D-23][JIRA US-07 RN2].</summary>
 public class RepositorioHistorial : IRepositorioHistorial
 {
     private readonly OasisStayDbContext _db;
@@ -151,5 +177,24 @@ public class RepositorioHistorial : IRepositorioHistorial
         _db.SaveChanges();
     }
 
-    public void Archivar(int idReserva, Factura factura) => throw new NotImplementedException("F4");
+    /// <summary>
+    /// Último paso del check-out: Reserva EnCurso → Finalizada y evento en la bitácora [DE#4 archivarReserva][JIRA US-06 RN2][D-23].
+    /// Firma del GoF Archivar(idReserva, factura) [CTR §5].
+    /// </summary>
+    public void Archivar(int idReserva, Factura factura)
+    {
+        var reserva = _db.Reservas.FirstOrDefault(r => r.IdReserva == idReserva)
+            ?? throw new NoEncontradoException("La reserva no existe.");
+        var anterior = reserva.Estado;
+        reserva.HacerCheckOut();
+        RegistrarEvento(new HistorialReserva
+        {
+            FechaRegistro = factura.FechaEmision,
+            AccionRealizada = "Check-out",
+            IdReserva = idReserva,
+            Usuario = "sistema",
+            ValorAnterior = anterior.ToString(),
+            ValorNuevo = $"{reserva.Estado} · Factura folio {factura.Folio}",
+        });
+    }
 }
