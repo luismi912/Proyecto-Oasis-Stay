@@ -27,6 +27,7 @@ public class OasisStayDbContext : IdentityDbContext<UsuarioOasis>
     public DbSet<Pago> Pagos => Set<Pago>();
     public DbSet<HistorialReserva> HistorialReservas => Set<HistorialReserva>();
     public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
+    public DbSet<AuditoriaReporte> AuditoriasReporte => Set<AuditoriaReporte>(); // [DS3][D-46]
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -108,6 +109,13 @@ public class OasisStayDbContext : IdentityDbContext<UsuarioOasis>
             e.Property(h => h.Usuario).HasMaxLength(256);
             e.HasIndex(h => h.IdReserva);
             e.HasIndex(h => h.FechaRegistro); // [JIRA US-07 riesgo: indexación por ID de reserva y fecha]
+        });
+
+        b.Entity<AuditoriaReporte>(e =>
+        {
+            e.HasKey(a => a.IdAuditoria);
+            e.Property(a => a.Usuario).HasMaxLength(256);
+            e.Property(a => a.Formato).HasMaxLength(10);
         });
 
         foreach (var fk in b.Model.GetEntityTypes()

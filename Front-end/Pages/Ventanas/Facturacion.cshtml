@@ -66,7 +66,7 @@
                     <div>
                         <h2>Check-outs pendientes</h2>
                         <p>Confirma pagos y genera documentos fiscales.</p>
-                    </div><a class="primary-button" href="#">Exportar reporte</a>
+                    </div>@if (User.IsInRole("Administrador")) { <a class="primary-button" asp-page="/Ventanas/Historial">Exportar reporte</a> }
                 </div>
                 <table class="data-table">
                     <thead>
