@@ -371,6 +371,8 @@ namespace OasisStay.Infraestructura.Persistencia.Migraciones
 
                     b.HasKey("IdHistorial");
 
+                    b.HasIndex("FechaRegistro");
+
                     b.HasIndex("IdReserva");
 
                     b.ToTable("HistorialReservas");

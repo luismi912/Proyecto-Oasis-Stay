@@ -45,6 +45,7 @@ public class AtomicidadPruebas : IAsyncLifetime
     {
         public void RegistrarEvento(HistorialReserva evento) => throw new InvalidOperationException("Fallo forzado después de guardar reserva y habitaciones");
         public void Archivar(int idReserva, Factura factura) => throw new NotImplementedException();
+        public IReadOnlyList<HistorialReserva> BuscarEventos(FiltrosHistorial filtros) => throw new NotImplementedException();
     }
 
     private GestionReservas Servicio(OasisStayDbContext db, bool historialFalla) => new(
