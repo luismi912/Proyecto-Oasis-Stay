@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" agent="C4 Architecture" version="24.7.17">
+  <diagram id="c4-componentes" name="Nivel 3 - Componentes">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        
+        <mxCell id="backend_boundary" value="&lt;b&gt;Backend / API de Negocio&lt;/b&gt; [Container: ASP.NET Core Web API]" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;strokeColor=#555555;strokeWidth=2;fillColor=none;align=left;verticalAlign=top;spacingLeft=20;spacingTop=15;fontColor=#333333;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="320" y="40" width="830" height="580" as="geometry" />
+        </mxCell>
+        
+        
+        <mxCell id="ext_web" value="&lt;b&gt;Aplicación Web Administrativa&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;[Container: Razor Pages]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Interfaz de usuario que consume la API de negocio." style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#438DD5;strokeColor=#2E6295;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="190" width="220" height="110" as="geometry" />
+        </mxCell>
+        
+        
+        
+        <mxCell id="comp_reservas" value="&lt;b&gt;GestionReservas&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Component: C# / App Service]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Coordina creación, edición y cancelación de reservas; valida fechas y datos de huésped." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#5C95D1;strokeColor=#3A6899;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="90" width="230" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp_cuentas" value="&lt;b&gt;MotorCuentasFacturacion&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Component: C# / Domain Service]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Calcula cotizaciones, consumos, IVA 19% (RN-03), recargo late check-out (RN-04) y factura." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#5C95D1;strokeColor=#3A6899;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="620" y="90" width="240" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp_auditoria" value="&lt;b&gt;AuditoriaHistorial&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Component: C# / App Service]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Consulta eventos, reportes y trazabilidad por rango de fechas o clientes sin alterar datos." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#5C95D1;strokeColor=#3A6899;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="90" width="220" height="100" as="geometry" />
+        </mxCell>
+        
+        
+        <mxCell id="comp_disponibilidad" value="&lt;b&gt;MotorDisponibilidadAsignacion&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Component: C# / Domain Service]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Verifica capacidad (RN-05), solapamiento (RN-01) y bloquea habitaciones transaccionalmente." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#5C95D1;strokeColor=#3A6899;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="270" width="230" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp_estado_hab" value="&lt;b&gt;GestionEstadoHabitacion&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Component: C# / App Service]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Ejecuta transiciones permitidas (Disponible, Limpieza, Ocupada, Mantenimiento) y audita." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#5C95D1;strokeColor=#3A6899;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="620" y="270" width="240" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp_pagos" value="&lt;b&gt;GestionPagos&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Component: C# / App Service]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Valida datos de métodos autorizados (RN-06) y registra cobros con trazabilidad." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#5C95D1;strokeColor=#3A6899;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="270" width="220" height="110" as="geometry" />
+        </mxCell>
+        
+        
+        <mxCell id="comp_notificaciones" value="&lt;b&gt;NotificacionesProceso&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Component: C# / Domain Event Handler]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Publica eventos de dominio y construye mensajes de reserva, check-in, check-out y factura." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#5C95D1;strokeColor=#3A6899;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="620" y="450" width="240" height="100" as="geometry" />
+        </mxCell>
+        
+        
+        <mxCell id="db_sql" value="&lt;b&gt;SQL Server&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Container: Base de Datos]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Persiste reservas, habitaciones, facturas y auditoría." style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#438DD5;strokeColor=#2E6295;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="660" width="220" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ext_proveedor_noti" value="&lt;b&gt;Proveedor de notificaciones&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;[Software System]&lt;/font&gt;&lt;br&gt;&lt;br&gt;Entrega correos y SMS a clientes." style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#999999;strokeColor=#666666;fontColor=#ffffff;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="450" width="210" height="100" as="geometry" />
+        </mxCell>
+        
+        
+        
+        <mxCell id="e_web_res" value="Solicita reserva [JSON/HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ext_web" target="comp_reservas">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="210" />
+              <mxPoint x="290" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_web_hab" value="Cambio de estado [JSON/HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ext_web" target="comp_estado_hab">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="270" />
+              <mxPoint x="290" y="325" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        
+        <mxCell id="e_res_disp" value="Solicita bloqueo y asignación&lt;br&gt;&lt;b&gt;[In-process]&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_reservas" target="comp_disponibilidad">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        
+        <mxCell id="e_disp_db" value="Bloqueo transaccional de habitación&lt;br&gt;&lt;b&gt;[EF Core / SQL Trans]&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0B4D8C;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#0B4D8C;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_disponibilidad" target="db_sql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="465" y="630" />
+              <mxPoint x="545" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_res_db" value="Persiste reservas y huéspedes&lt;br&gt;&lt;b&gt;[EF Core]&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_reservas" target="db_sql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="330" y="160" />
+              <mxPoint x="330" y="710" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_hab_db" value="Actualiza estado de habitación [EF Core]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_estado_hab" target="db_sql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="420" />
+              <mxPoint x="600" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_cuentas_pagos" value="Solicita autorización y cobro&lt;br&gt;&lt;b&gt;[In-process]&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_cuentas" target="comp_pagos">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="830" y="230" />
+              <mxPoint x="960" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_cuentas_db" value="Lee consumos y guarda facturas [EF Core]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_cuentas" target="db_sql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="240" />
+              <mxPoint x="650" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_pagos_db" value="Registra cobro [EF Core]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_pagos" target="db_sql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="420" />
+              <mxPoint x="670" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_auditoria_db" value="Consulta historial y auditoría [EF Core]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_auditoria" target="db_sql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1140" y="140" />
+              <mxPoint x="1140" y="730" />
+              <mxPoint x="710" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        
+        <mxCell id="e_res_noti" value="Evento reserva [In-process]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_reservas" target="comp_notificaciones">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="170" />
+              <mxPoint x="600" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_cuentas_noti" value="Evento factura emitida [In-process]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_cuentas" target="comp_notificaciones">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="240" />
+              <mxPoint x="740" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_noti_ext" value="Despacha correo o SMS&lt;br&gt;&lt;b&gt;[HTTPS / REST]&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#444444;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="comp_notificaciones" target="ext_proveedor_noti">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
