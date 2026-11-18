@@ -19,6 +19,13 @@ public static class ReinicioEscenario
 
     public static async Task ReiniciarAsync(OasisStayDbContext db)
     {
+        // Las FK son Restrict: primero lo que cuelga de la reserva (F3: detalles, pagos, facturas y consumos) [D-41]
+        db.DetallesFactura.RemoveRange(await db.DetallesFactura.ToListAsync());
+        db.Pagos.RemoveRange(await db.Pagos.ToListAsync());
+        await db.SaveChangesAsync();
+        db.Facturas.RemoveRange(await db.Facturas.ToListAsync());
+        db.ConsumosReserva.RemoveRange(await db.ConsumosReserva.ToListAsync());
+        await db.SaveChangesAsync();
         db.HistorialReservas.RemoveRange(await db.HistorialReservas.ToListAsync());
         db.Notificaciones.RemoveRange(await db.Notificaciones.ToListAsync());
         db.Reservas.RemoveRange(await db.Reservas.ToListAsync());

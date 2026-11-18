@@ -63,9 +63,6 @@
             const checkIn = inputs[0]?.value;
             const checkOut = inputs[1]?.value;
             const nights = checkIn && checkOut ? Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000)) : 1;
-            const price = Number(room?.dataset.roomPrice || 185000);
-            const subtotal = nights * price;
-            const tax = subtotal * .19;
             reservationModal.querySelector("#summary-room-number").textContent = room?.value || "102";
             reservationModal.querySelector("#summary-room-type").textContent = room?.dataset.roomType || "Doble Clásica";
             reservationModal.querySelector("#summary-nights").textContent = nights;
@@ -73,9 +70,27 @@
             reservationModal.querySelector("#summary-guests").textContent = guests?.value || "2";
             reservationModal.querySelector("#summary-checkin").textContent = formatDate(checkIn);
             reservationModal.querySelector("#summary-checkout").textContent = formatDate(checkOut);
-            reservationModal.querySelector("#summary-subtotal").textContent = formatCurrency(subtotal);
-            reservationModal.querySelector("#summary-tax").textContent = formatCurrency(tax);
-            reservationModal.querySelector("#summary-total").firstChild.textContent = formatCurrency(subtotal + tax);
+            cotizar(room?.value, checkIn, checkOut);
+        };
+        // Subtotal, IVA y total los calcula la API (POST /api/cotizaciones) sin recargar la página [JIRA US-05 ESC3][E2 §6]
+        let cotizacionActual = 0;
+        const cotizar = async (habitacion, checkIn, checkOut) => {
+            const subtotalEl = reservationModal.querySelector("#summary-subtotal");
+            const taxEl = reservationModal.querySelector("#summary-tax");
+            const totalEl = reservationModal.querySelector("#summary-total").firstChild;
+            const nota = reservationModal.querySelector(".summary-note");
+            const turno = ++cotizacionActual;
+            if (!habitacion || !checkIn || !checkOut) { subtotalEl.textContent = taxEl.textContent = totalEl.textContent = "—"; return; }
+            try {
+                const r = await fetch(`?handler=Cotizacion&numeroHabitacion=${encodeURIComponent(habitacion)}&fechaInicio=${checkIn}&fechaFin=${checkOut}`);
+                const j = await r.json();
+                if (turno !== cotizacionActual) return;
+                if (!r.ok) { subtotalEl.textContent = taxEl.textContent = totalEl.textContent = "—"; if (nota) nota.textContent = j.detail || "No se pudo calcular la cotización."; return; }
+                subtotalEl.textContent = formatCurrency(j.subtotal);
+                taxEl.textContent = formatCurrency(j.iva);
+                totalEl.textContent = formatCurrency(j.total) ;
+                if (nota) nota.textContent = "♢ Cancelación gratuita hasta 24 horas antes del check-in.";
+            } catch { if (turno === cotizacionActual) subtotalEl.textContent = taxEl.textContent = totalEl.textContent = "—"; }
         };
         reservationModal.querySelectorAll("input, select").forEach(input => input.addEventListener("change", updateSummary));
         updateSummary();

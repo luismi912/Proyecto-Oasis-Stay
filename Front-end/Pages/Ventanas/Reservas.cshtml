@@ -39,6 +39,8 @@
                     <th>Habitación</th>
                     <th>Estadía</th>
                     <th>Estado</th>
+                    <th>Pago</th>
+                    <th>Total</th>
                     <th>Check-in</th>
                     <th>Reasignar</th>
                 </tr>
@@ -52,6 +54,16 @@
                         <td>Hab. @item.Habitacion</td>
                         <td>@item.FechaInicio.ToString("dd MMM") — @item.FechaFin.ToString("dd MMM")</td>
                         <td><span class="payment @(item.Estado == "Confirmada" ? "pending" : "")">@item.Estado</span></td>
+                        @if (Model.Cobros.TryGetValue(item.IdReserva, out var cobro))
+                        {
+                            <td><span class="payment @(cobro.EstadoPago == "Pendiente" ? "pending" : "")">@cobro.EstadoPago</span></td>
+                            <td><strong>$@cobro.Total.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</strong></td>
+                        }
+                        else
+                        {
+                            <td>—</td>
+                            <td>—</td>
+                        }
                         <td>
                             @if (item.Estado == "Confirmada")
                             {

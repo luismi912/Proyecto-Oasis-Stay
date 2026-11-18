@@ -15,6 +15,9 @@ builder.Services.AddHttpClient<HabitacionesApi>(c =>
 builder.Services.AddHttpClient<ReservasApi>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
     .AddHttpMessageHandler<JwtDelegatingHandler>();
+builder.Services.AddHttpClient<FacturacionApi>(c =>
+        c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
+    .AddHttpMessageHandler<JwtDelegatingHandler>();
 
 // El JWT de la API viaja en la cookie HttpOnly; sin sesión o con token vencido se vuelve al login [D-02].
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
