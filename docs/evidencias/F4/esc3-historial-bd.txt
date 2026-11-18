@@ -1,0 +1,7 @@
+﻿IdReserva Usuario AccionRealizada ValorAnterior ValorNuevo
+--------- ------- --------------- ------------- ----------
+1 Camila Mejía Cancelación Confirmada Cancelada · Penalidad $0
+2 Camila Mejía Cancelación Confirmada Cancelada · Penalidad $180.000
+3 Camila Mejía Cancelación Confirmada Cancelada · Penalidad exonerada · Motivo: Emergencia médica demostrada
+
+(3 filas afectadas)

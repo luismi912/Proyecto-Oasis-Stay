@@ -1,0 +1,5 @@
+Rechazos de US-08 observados desde el navegador contra la API (semilla --escenario US08, rol Recepcionista):
+
+POST /api/reservas/10/cancelar   (hab. 225, EnCurso)            -> 409 {"status":409,"detail":"Una reserva en curso no puede cancelarse"}
+POST /api/reservas/8/cancelar    {"exonerar":true,"motivo":"x"}  -> 403 {"status":403,"detail":"Solo el Administrador puede exonerar la penalidad"}
+Los dos errores de consola (409 y 403) son estas respuestas esperadas; el estado de las reservas no cambió.
