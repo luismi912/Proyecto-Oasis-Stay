@@ -44,6 +44,7 @@ public static class ExtensionesDi
         s.AddScoped<IFacturaRepository, FacturaRepository>();
         s.AddScoped<IRepositorioPagos, RepositorioPagos>();
         s.AddScoped<IRepositorioHistorial, RepositorioHistorial>();
+        s.AddScoped<IAuditoriaHistorial, AuditoriaHistorial>(); // [DS3][F4a]
         s.AddScoped<MotorDisponibilidadAsignacion>();
         s.AddScoped<IGestionReservas, GestionReservas>();
         // F1 [CTR §5][D-16][D-39]
@@ -70,6 +71,7 @@ public static class ExtensionesDi
         // F4 [DE#4][D-44]
         s.AddScoped<ICancelacionReservas>(sp => (GestionReservas)sp.GetRequiredService<IGestionReservas>());
         s.AddScoped<ISemillaDemo, SemillaDemoF4>(); // [D-39][D-41]
+        s.AddScoped<ISemillaDemo, SemillaDemoF4a>(); // [D-39][D-41]
         s.AddScoped<EjecutorSemillaDemo>();
         return s;
     }

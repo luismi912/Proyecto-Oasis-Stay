@@ -180,6 +180,36 @@ public class RepositorioHistorial : IRepositorioHistorial
         _db.SaveChanges();
     }
 
+    /// <summary>Eventos en orden cronológico según los filtros [DS3 BuscarEventos(filtros)][JIRA US-07 ESC1/ESC2].</summary>
+    public IReadOnlyList<HistorialReserva> BuscarEventos(FiltrosHistorial filtros)
+    {
+        var q = _db.HistorialReservas.AsNoTracking().AsQueryable();
+        if (filtros.IdReserva.HasValue) q = q.Where(h => h.IdReserva == filtros.IdReserva.Value);
+        if (!string.IsNullOrWhiteSpace(filtros.Usuario))
+        {
+            var u = filtros.Usuario.Trim().ToLower();
+            q = q.Where(h => h.Usuario.ToLower() == u);
+        }
+        if (filtros.Desde.HasValue)
+        {
+            var d = filtros.Desde.Value.Date;
+            q = q.Where(h => h.FechaRegistro >= d);
+        }
+        if (filtros.Hasta.HasValue)
+        {
+            var h2 = filtros.Hasta.Value.Date.AddDays(1);
+            q = q.Where(h => h.FechaRegistro < h2);
+        }
+        if (!string.IsNullOrWhiteSpace(filtros.Texto))
+        {
+            var t = filtros.Texto.Trim().ToLower();
+            q = q.Where(h => h.AccionRealizada.ToLower().Contains(t) || h.Usuario.ToLower().Contains(t)
+                || (h.ValorAnterior != null && h.ValorAnterior.ToLower().Contains(t))
+                || (h.ValorNuevo != null && h.ValorNuevo.ToLower().Contains(t)));
+        }
+        return q.OrderBy(h => h.FechaRegistro).ThenBy(h => h.IdHistorial).ToList();
+    }
+
     /// <summary>
     /// Último paso del check-out: Reserva EnCurso → Finalizada y evento en la bitácora [DE#4 archivarReserva][JIRA US-06 RN2][D-23].
     /// Firma del GoF Archivar(idReserva, factura) [CTR §5].

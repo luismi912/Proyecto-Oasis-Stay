@@ -24,6 +24,8 @@ public interface IRepositorioHistorial
 {
     void RegistrarEvento(HistorialReserva evento);
     void Archivar(int idReserva, Factura factura);
+    /// <summary>Consulta cronológica con filtros [DS3][JIRA US-07]; no modifica nada.</summary>
+    IReadOnlyList<HistorialReserva> BuscarEventos(FiltrosHistorial filtros);
 }
 
 /// <summary>Notificador; el adaptador simulado guarda en BD [D-04].</summary>
