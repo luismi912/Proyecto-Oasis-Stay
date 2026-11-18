@@ -86,7 +86,7 @@ public class ApiReservasPruebas : IClassFixture<FabricaApiF2>
 
         using var scope = _fabrica.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<OasisStayDbContext>();
-        Assert.Equal(EstadoHab(db, 304), "RESERVADA");
+        Assert.Equal("RESERVADA", EstadoHab(db, 304));
         Assert.Contains(db.HistorialReservas, h => h.IdReserva == id && h.Usuario != "" && h.AccionRealizada == "Reserva creada");
     }
 

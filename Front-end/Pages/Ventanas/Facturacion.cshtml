@@ -40,14 +40,12 @@
     .fact-form [data-metodo].visible { display: grid; }
 </style>
 
-<div class="stats">
-    <div class="stat"><span class="stat-icon">▤</span><span><small>Ingresos del
-        mes</small><strong>$48,2M</strong><em>+12,4% vs. anterior</em></span></div>
-        <div class="stat"><span class="stat-icon">✓</span><span><small>Facturas emitidas</small><strong>128</strong><em>6
-            pendientes hoy</em></span></div>
-            <div class="stat"><span class="stat-icon">◷</span><span><small>Por cobrar</small><strong>$2,4M</strong><em
-                style="color:var(--orange)">14 cuentas abiertas</em></span></div>
-            </div>
+<div class="stats" id="indicadores-facturacion">
+    <div class="stat"><span class="stat-icon">▤</span><span><small>Ingresos del mes</small><strong id="ind-ingresos">@D(Model.Indicadores.IngresosMes)</strong><em>facturas emitidas este mes</em></span></div>
+    <div class="stat"><span class="stat-icon">✓</span><span><small>Facturas emitidas</small><strong id="ind-facturas">@Model.Indicadores.FacturasMes</strong><em>este mes</em></span></div>
+    <div class="stat"><span class="stat-icon">◷</span><span><small>Por cobrar</small><strong id="ind-por-cobrar">@D(Model.Indicadores.PorCobrar)</strong><em id="ind-cuentas"
+        style="color:var(--orange)">@Model.Indicadores.CuentasAbiertas cuentas abiertas</em></span></div>
+</div>
 
 @if (Model.FacturaId is int facturaId)
 {

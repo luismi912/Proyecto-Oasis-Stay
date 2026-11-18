@@ -80,6 +80,7 @@ public static class ExtensionesDi
         s.AddSingleton<IGeneradorReporte, GeneradorReportePdf>();
         s.AddScoped<AuditoriaHistorial>();
         s.AddScoped<ServicioReportes>();
+        s.AddScoped<ServicioIndicadores>();
         s.AddScoped<ISemillaDemo, SemillaDemoF6>(); // [D-39][D-41]
         s.AddScoped<EjecutorSemillaDemo>();
         return s;

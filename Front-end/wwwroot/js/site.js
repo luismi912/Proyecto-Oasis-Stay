@@ -121,12 +121,19 @@
         const alerta = reservationModal.querySelector("#availability-alert");
         const escapar = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
         let consulta = 0;
+        const notaResumen = reservationModal.querySelector(".summary-note");
+        const notaInicial = notaResumen?.textContent ?? "";
+        const limpiarAvisos = () => { alerta.hidden = true; alerta.textContent = ""; if (notaResumen) notaResumen.textContent = notaInicial; };
+        const resumenSinHabitacion = () => {
+            reservationModal.querySelector("#summary-room-number").textContent = "—";
+            reservationModal.querySelector("#summary-room-type").textContent = "Sin habitaciones disponibles";
+        };
         const cargarHabitaciones = async () => {
             const turno = ++consulta;
             const ini = inputs[0]?.value, fin = inputs[1]?.value;
             if (!ini || !fin) return;
             const previa = contenedor.querySelector("input:checked")?.value ?? contenedor.dataset.selected;
-            alerta.hidden = true;
+            limpiarAvisos(); // [JIRA US-01 ESC2/ESC3][F7 obs. 2]: nada de la búsqueda anterior queda visible
             try {
                 const tipo = reservationModal.querySelector("#availability-type")?.value ?? "";
                 const r = await fetch(`?handler=Disponibilidad&fechaInicio=${ini}&fechaFin=${fin}&huespedes=${guests.value}&tipo=${encodeURIComponent(tipo)}`);
@@ -137,6 +144,7 @@
                     alerta.textContent = j.detail || "No se pudo consultar la disponibilidad.";
                     alerta.hidden = false;
                     updateSummary();
+                    resumenSinHabitacion();
                     return;
                 }
                 if (j.habitaciones.length === 0) {
@@ -148,6 +156,7 @@
                 contenedor.innerHTML = j.habitaciones.map((h, i) => `<label class="room-option"><input name="Reservation.RoomNumber" type="radio" value="${h.numero}" ${(hay ? String(h.numero) === String(previa) : i === 0) ? "checked" : ""} data-room-price="${h.precioNoche}" data-room-type="${escapar(h.tipo)}" /><span><strong>Hab. ${h.numero}</strong><small>${escapar(h.tipo)}</small></span><b>$${Math.round(h.precioNoche).toLocaleString("es-CO")}<small>/ noche</small></b></label>`).join("");
                 contenedor.querySelectorAll("input").forEach(i => i.addEventListener("change", updateSummary));
                 updateSummary();
+                if (j.habitaciones.length === 0) resumenSinHabitacion(); // el resumen no conserva datos viejos ni de relleno
             } catch { contenedor.innerHTML = ""; }
         };
         inputs.forEach(i => i.addEventListener("change", cargarHabitaciones));

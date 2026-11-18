@@ -19,9 +19,11 @@ public class FacturacionController : ControllerBase
     private readonly IServicioFacturacion _facturacion;
     private readonly IGestionPagos _pagos;
     private readonly ICheckoutFacade _checkout;
+    private readonly ServicioIndicadores _indicadores;
 
-    public FacturacionController(IServicioFacturacion facturacion, IGestionPagos pagos, ICheckoutFacade checkout)
+    public FacturacionController(IServicioFacturacion facturacion, IGestionPagos pagos, ICheckoutFacade checkout, ServicioIndicadores indicadores)
     {
+        _indicadores = indicadores;
         _facturacion = facturacion;
         _pagos = pagos;
         _checkout = checkout;
@@ -42,6 +44,10 @@ public class FacturacionController : ControllerBase
     /// <summary>[DS4 calcularTotales] resumen de cobro con consumos, subtotal, IVA, total, pagado y saldo.</summary>
     [HttpGet("api/facturacion/{idReserva:int}/totales")]
     public ActionResult<ResumenCobro> Totales(int idReserva) => _facturacion.CalcularTotales(idReserva);
+
+    /// <summary>Indicadores reales de las tarjetas de Facturación y del banner de Historial [D-48][D-34].</summary>
+    [HttpGet("api/facturacion/indicadores")]
+    public ActionResult<IndicadoresFacturacion> Indicadores() => _indicadores.Consultar();
 
     /// <summary>"Check-outs pendientes" de la pantalla Facturación [E2 §6].</summary>
     [HttpGet("api/facturacion/pendientes")]
