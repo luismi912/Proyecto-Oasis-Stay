@@ -28,6 +28,9 @@ public interface IRepositorioHistorial
     IReadOnlyList<HistorialReserva> BuscarEventos(FiltrosHistorial filtros);
 }
 
+/// <summary>Usuario autenticado de la petición en curso; "sistema" si no hay (pruebas, servicios en segundo plano) [D-47][D-23].</summary>
+public interface IUsuarioActual { string Nombre { get; } }
+
 /// <summary>Notificador; el adaptador simulado guarda en BD [D-04].</summary>
 public interface INotificador { void Notificar(string destinatario, string asunto, string mensaje); }
 
