@@ -23,7 +23,7 @@ public sealed class PilaF3
 /// <summary>Base propia OasisStay_PruebasF3 (se borra al terminar), con los tipos y tarifas de los escenarios de Jira [D-29][D-39].</summary>
 public sealed class BancoF3 : IAsyncLifetime
 {
-    public const string Cadena = "Server=localhost;Database=OasisStay_PruebasF3;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+    public static readonly string Cadena = NombresBasePruebas.Cadena("F3");
     private static int _habitacion = 400;
     private static int _documento = 9000000;
 
