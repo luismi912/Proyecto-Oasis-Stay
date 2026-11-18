@@ -21,6 +21,9 @@ builder.Services.AddHttpClient<ReservasApi>(c =>
 builder.Services.AddHttpClient<HistorialApi>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
     .AddHttpMessageHandler<JwtDelegatingHandler>();
+builder.Services.AddHttpClient<ReportesApi>(c =>
+        c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
+    .AddHttpMessageHandler<JwtDelegatingHandler>();
 builder.Services.AddHttpClient<FacturacionApi>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7001/"))
     .AddHttpMessageHandler<JwtDelegatingHandler>();

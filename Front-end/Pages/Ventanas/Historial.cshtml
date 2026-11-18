@@ -6,13 +6,13 @@
     var co = CultureInfo.GetCultureInfo("es-CO");
 }
 <div class="content-banner"><span><strong>Ingresos este mes: $48.260.500 COP</strong><small>+12,4% frente al mes
-    anterior · 128 reservas completadas</small></span><button type="button" class="primary-button" id="exportar-reporte" disabled aria-disabled="true"
-    title="Disponible con la exportación de reportes">↓ Exportar reporte</button>
+    anterior · 128 reservas completadas</small></span><button type="button" class="primary-button" id="exportar-reporte" data-modal-open="reporte-modal">↓ Exportar reporte</button>
 </div>
 @if (Model.Error != null)
 {
     <div class="toast error" role="alert">@Model.Error</div>
 }
+<div class="toast success" role="status" id="reporte-exito" hidden></div>
 <section class="table-card">
     <div class="table-head">
         <div>
@@ -130,11 +130,49 @@
     </section>
 </div>
 
+<div class="modal-backdrop" id="reporte-modal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="reporte-title">
+        <div class="modal-heading">
+            <div><span class="eyebrow">Reportes financieros</span>
+                <h2 id="reporte-title">Exportar reporte</h2>
+                <p>Elige el periodo y el formato. Solo incluye facturas cerradas.</p>
+            </div>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+        <div class="modal-main">
+            <div class="filters" style="gap:10px">
+                <label>Desde <input type="date" id="reporte-desde" aria-label="Desde" /></label>
+                <label>Hasta <input type="date" id="reporte-hasta" aria-label="Hasta" /></label>
+                <label>Formato
+                    <select id="reporte-formato" aria-label="Formato">
+                        <option value="xlsx">Excel (.xlsx)</option>
+                        <option value="pdf">PDF</option>
+                    </select>
+                </label>
+            </div>
+            <div class="reporte-kpis" id="reporte-kpis">
+                <div><small>Ingreso Total</small><strong id="kpi-ingreso">—</strong></div>
+                <div><small>Ticket Promedio</small><strong id="kpi-ticket">—</strong></div>
+                <div><small>Ocupación %</small><strong id="kpi-ocupacion">—</strong></div>
+            </div>
+            <div class="alert-box" id="reporte-aviso" role="alert" hidden></div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="secondary-button" data-modal-close>Cerrar</button>
+            <button type="button" class="primary-button" id="reporte-descargar" disabled>↓ Descargar</button>
+        </div>
+    </section>
+</div>
+
 <style>
+    .reporte-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+    .reporte-kpis div { border: 1px solid var(--line, #e5e7eb); border-radius: 10px; padding: 10px 12px; }
+    .reporte-kpis small { display: block; color: var(--muted, #6b7280); }
+    .reporte-kpis strong { font-size: 1.15em; }
+    #reporte-descargar[disabled] { opacity: .5; cursor: not-allowed; }
     .empty-state { text-align: center; color: var(--muted, #6b7280); padding: 22px; }
     .filters { flex-wrap: wrap; align-items: center; }
     .filters input[type=date] { min-width: 140px; }
-    #exportar-reporte[disabled] { opacity: .5; cursor: not-allowed; }
     .linea-tiempo { list-style: none; margin: 0; padding: 4px 0 0 6px; position: relative; max-height: 55vh; overflow: auto; }
     .linea-tiempo li { position: relative; padding: 0 0 18px 34px; border-left: 2px solid var(--line, #e5e7eb); margin-left: 12px; }
     .linea-tiempo li:last-child { border-left-color: transparent; padding-bottom: 4px; }
@@ -157,6 +195,48 @@
             const tipo = accion => /cancel|no-show/i.test(accion) ? ["cancelacion", "✕"] : /creada/i.test(accion) ? ["creacion", "＋"] : ["edicion", "✎"];
             const fecha = iso => { const d = new Date(iso); const p = n => String(n).padStart(2, "0");
                 return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+
+            // Modal de exportación de reportes [JIRA US-11][DS3]: la API valida; aquí solo se muestran sus avisos
+            const desde = document.getElementById("reporte-desde"), hasta = document.getElementById("reporte-hasta");
+            const formato = document.getElementById("reporte-formato"), descargar = document.getElementById("reporte-descargar");
+            const aviso = document.getElementById("reporte-aviso"), exito = document.getElementById("reporte-exito");
+            const kpi = { ingreso: document.getElementById("kpi-ingreso"), ticket: document.getElementById("kpi-ticket"), ocupacion: document.getElementById("kpi-ocupacion") };
+            const dinero = v => "$" + Number(v).toLocaleString("es-CO", { maximumFractionDigits: 2 });
+            const mostrarAviso = texto => { aviso.textContent = texto; aviso.hidden = !texto; };
+            const limpiarKpis = () => { kpi.ingreso.textContent = kpi.ticket.textContent = kpi.ocupacion.textContent = "—"; };
+
+            async function actualizarResumen() {
+                descargar.disabled = true; exito.hidden = true; mostrarAviso(""); limpiarKpis();
+                if (!desde.value || !hasta.value) return;
+                try {
+                    const r = await fetch(`?handler=Resumen&desde=${desde.value}&hasta=${hasta.value}`, { headers: { Accept: "application/json" } });
+                    const d = await r.json();
+                    if (!r.ok) { mostrarAviso(d.detail || "No se pudo generar el reporte."); return; }
+                    kpi.ingreso.textContent = dinero(d.ingresoTotal);
+                    kpi.ticket.textContent = dinero(d.ticketPromedio);
+                    kpi.ocupacion.textContent = Number(d.ocupacionPorcentaje).toLocaleString("es-CO", { minimumFractionDigits: 2 }) + " %";
+                    if (d.facturas === 0) { mostrarAviso("No hay movimientos en el periodo seleccionado: no se genera un archivo en blanco"); return; }
+                    descargar.disabled = false;
+                } catch { mostrarAviso("No se pudo generar el reporte."); }
+            }
+            desde.addEventListener("change", actualizarResumen);
+            hasta.addEventListener("change", actualizarResumen);
+
+            descargar.addEventListener("click", async () => {
+                descargar.disabled = true; mostrarAviso(""); exito.hidden = true;
+                try {
+                    const r = await fetch(`?handler=Exportar&desde=${desde.value}&hasta=${hasta.value}&formato=${formato.value}`);
+                    if (!r.ok) { const d = await r.json().catch(() => ({})); mostrarAviso(d.detail || "No se pudo generar el reporte."); return; }
+                    const blob = await r.blob();
+                    const nombre = (r.headers.get("Content-Disposition") || "").match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i)?.[1] || `reporte.${formato.value}`;
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob); a.download = decodeURIComponent(nombre); a.click();
+                    URL.revokeObjectURL(a.href);
+                    exito.textContent = `Reporte generado y descargado: ${decodeURIComponent(nombre)}`; exito.hidden = false;
+                    document.querySelector("#reporte-modal [data-modal-close]").click();
+                } catch { mostrarAviso("No se pudo generar el reporte."); }
+                finally { descargar.disabled = false; }
+            });
 
             document.querySelectorAll("[data-ver-historial]").forEach(boton => boton.addEventListener("click", async () => {
                 const id = boton.dataset.id;

@@ -14,8 +14,9 @@ namespace Front_end.Pages
         private readonly ReservasApi _reservas;
         private readonly HistorialApi _historial;
         private readonly FacturacionApi _facturacion;
-        public HistorialModel(ReservasApi reservas, HistorialApi historial, FacturacionApi facturacion)
-        { _reservas = reservas; _historial = historial; _facturacion = facturacion; }
+        private readonly ReportesApi _reportes;
+        public HistorialModel(ReservasApi reservas, HistorialApi historial, FacturacionApi facturacion, ReportesApi reportes)
+        { _reservas = reservas; _historial = historial; _facturacion = facturacion; _reportes = reportes; }
 
         [BindProperty(SupportsGet = true)] public string? Q { get; set; }
         [BindProperty(SupportsGet = true)] public string? Estado { get; set; }
@@ -59,6 +60,26 @@ namespace Front_end.Pages
                 catch (ApiException) { /* sin dato de cobro */ }
             }
             Cobros = cobros;
+        }
+
+        /// <summary>KPIs del modal de exportación [JIRA US-11 UX]; 400 con el aviso de la API si el rango no es válido [JIRA US-11 ESC3].</summary>
+        public async Task<IActionResult> OnGetResumenAsync(DateTime? desde, DateTime? hasta)
+        {
+            try { return new JsonResult(await _reportes.ResumenAsync(desde, hasta)); }
+            catch (ApiException ex) { return new JsonResult(new { detail = ex.Message }) { StatusCode = (int)ex.Estado }; }
+            catch (HttpRequestException) { return new JsonResult(new { detail = "No se pudo generar el reporte." }) { StatusCode = 502 }; }
+        }
+
+        /// <summary>Descarga el .xlsx o .pdf [DS3 descargarReporte]; el error llega como errorGeneracion(motivo) [DS3 alt].</summary>
+        public async Task<IActionResult> OnGetExportarAsync(DateTime? desde, DateTime? hasta, string? formato)
+        {
+            try
+            {
+                var a = await _reportes.ExportarAsync(desde, hasta, formato ?? "");
+                return File(a.Contenido, a.TipoContenido, a.NombreArchivo);
+            }
+            catch (ApiException ex) { return new JsonResult(new { detail = ex.Message }) { StatusCode = (int)ex.Estado }; }
+            catch (HttpRequestException) { return new JsonResult(new { detail = "No se pudo generar el reporte." }) { StatusCode = 502 }; }
         }
 
         /// <summary>Línea de tiempo de una reserva (botón "Ver historial") [JIRA US-07 ESC1].</summary>
