@@ -52,7 +52,46 @@ public class Reserva
     /// <summary>Total con IVA de la estadía y sus consumos [DC][E1 RF-05][JIRA US-05 RN2]; requiere <see cref="Habitacion"/> con su tipo.</summary>
     public decimal CalcularTotal()
         => ArmadorCuenta.Armar((FechaFin.Date - FechaInicio.Date).Days, Habitacion?.Tipo?.CalcularPrecioNoche() ?? 0m, Consumos, true).CalcularCosto();
-    public void CancelarReserva() => throw new NotImplementedException("F2");
+    /// <summary>Penalidad registrada por cancelación tardía o No-Show: 100 % de la primera noche, sin IVA [JIRA US-08 RN2][D-44].</summary>
+    public decimal Penalidad { get; set; }
+    /// <summary>La penalidad fue exonerada por un Administrador [JIRA US-08 RN3][D-44].</summary>
+    public bool PenalidadExonerada { get; set; }
+    /// <summary>Justificación obligatoria de la exoneración [JIRA US-08 RN3][D-44].</summary>
+    public string? MotivoExoneracion { get; set; }
+
+    /// <summary>Confirmada → Cancelada [DE#4 CP-R03/CP-R04]; EnCurso, Finalizada, Cancelada y NoShow no cambian [DE#4 §5][CP-R08][D-44].</summary>
+    public void CancelarReserva()
+    {
+        ValidarAbierta();
+        Estado = EstadoReserva.Cancelada;
+    }
+
+    /// <summary>Confirmada sin check-in al fin del día de llegada → NoShow [DE#4 CP-R05][D-44].</summary>
+    public void MarcarNoShow()
+    {
+        ValidarAbierta();
+        Estado = EstadoReserva.NoShow;
+    }
+
+    /// <summary>Lanza el rechazo acordado si la reserva no está Confirmada [DE#4 §5][D-44].</summary>
+    public void ValidarCancelable() => ValidarAbierta();
+
+    private void ValidarAbierta()
+    {
+        if (Estado == EstadoReserva.Confirmada) return;
+        throw new ConflictoDominioException(Estado == EstadoReserva.EnCurso ? MensajesReserva.CancelarEnCurso : MensajesReserva.ReservaCerrada);
+    }
+
+    /// <summary>Último instante de cancelación gratuita: hora de check-in del día de llegada menos el plazo [JIRA US-08 RN1][D-01][D-24].</summary>
+    public DateTime LimiteCancelacionGratuita(TimeSpan horaCheckIn, int plazoHoras)
+        => FechaInicio.Date + horaCheckIn - TimeSpan.FromHours(plazoHoras);
+
+    /// <summary>Gratis hasta el límite (inclusive); después, 100 % de la primera noche sin IVA [JIRA US-08 RN1/RN2][D-44].</summary>
+    public decimal CalcularPenalidad(DateTime ahora, TimeSpan horaCheckIn, int plazoHoras)
+        => ahora <= LimiteCancelacionGratuita(horaCheckIn, plazoHoras) ? 0m : PrimeraNoche();
+
+    /// <summary>Valor de la primera noche = precio base de la habitación de la reserva [JIRA US-08 RN2].</summary>
+    public decimal PrimeraNoche() => Math.Round(Habitacion?.Tipo?.CalcularPrecioNoche() ?? 0m, 2);
     /// <summary>Confirmada → EnCurso [DE#4]; las guardas de documento y fecha están en la sobrecarga [D-31].</summary>
     public void HacerCheckIn()
     {

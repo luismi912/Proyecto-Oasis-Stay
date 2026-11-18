@@ -13,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.Configure<PoliticasOpciones>(builder.Configuration.GetSection("Politicas"));
 builder.Services.AddInfraestructura(builder.Configuration);
+if (OasisStay.Api.NoShowServicio.DebeEjecutarse(builder.Configuration, builder.Environment, args)) builder.Services.AddHostedService<OasisStay.Api.NoShowServicio>(); // [DE#4 CP-R05][D-44]
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)

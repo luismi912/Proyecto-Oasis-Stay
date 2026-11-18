@@ -84,6 +84,9 @@ public class RepositorioReservas : IRepositorioReservas
         return q.OrderByDescending(r => r.FechaInicio).ThenByDescending(r => r.IdReserva).ToList();
     }
 
+    public IReadOnlyList<Reserva> ListarConfirmadasHasta(DateTime fechaCorte)
+        => _db.Reservas.Where(r => r.Estado == EstadoReserva.Confirmada && r.FechaInicio <= fechaCorte).ToList();
+
     public void Guardar(Reserva reserva)
     {
         if (_db.Entry(reserva).State == EntityState.Detached) _db.Reservas.Update(reserva);

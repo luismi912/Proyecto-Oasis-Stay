@@ -60,7 +60,34 @@ public class ReservasController : ControllerBase
 {
     private readonly IRegistroReservas _servicio;
     private readonly IGestionReservas _gestion;
-    public ReservasController(IRegistroReservas servicio, IGestionReservas gestion) { _servicio = servicio; _gestion = gestion; }
+    private readonly ICancelacionReservas _cancelacion;
+    private readonly IReloj _reloj;
+    public ReservasController(IRegistroReservas servicio, IGestionReservas gestion, ICancelacionReservas cancelacion, IReloj reloj)
+    { _servicio = servicio; _gestion = gestion; _cancelacion = cancelacion; _reloj = reloj; }
+
+    /// <summary>Vista previa del cargo antes de cancelar, sin efectos [JIRA US-08 UX][D-44].</summary>
+    [HttpGet("{id:int}/penalidad")]
+    public ActionResult<PenalidadRespuesta> Penalidad(int id)
+    {
+        var p = _cancelacion.CalcularPenalidad(id);
+        return new PenalidadRespuesta { Gratis = p.Gratis, Penalidad = p.Penalidad, Limite = p.Limite };
+    }
+
+    /// <summary>Cancela con penalidad según el plazo de 24 h; exonerar solo el Administrador con motivo [DE#4][JIRA US-08 RN1-RN4][D-24][D-44].</summary>
+    [HttpPost("{id:int}/cancelar")]
+    public ActionResult<CancelacionRespuesta> Cancelar(int id, CancelacionSolicitud s)
+    {
+        if (s.Exonerar && !User.IsInRole("Administrador"))
+            return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails { Status = StatusCodes.Status403Forbidden, Detail = MensajesReserva.SoloAdminExonera });
+        var r = _cancelacion.CancelarReserva(id, s.Exonerar, s.Motivo, Usuario);
+        return new CancelacionRespuesta { Estado = r.Estado.ToString(), Penalidad = r.Penalidad, Exonerada = r.PenalidadExonerada };
+    }
+
+    /// <summary>Acción manual del No-Show: mismo corte que la rutina automática (por defecto ayer, UTC-5; el día de llegada de hoy aún no terminó) [DE#4 CP-R05][D-44].</summary>
+    [HttpPost("no-show/ejecutar")]
+    [Authorize(Roles = "Administrador")]
+    public ActionResult<NoShowRespuesta> EjecutarNoShow(NoShowSolicitud? s)
+        => new NoShowRespuesta { Procesadas = _cancelacion.EjecutarNoShow(s?.FechaCorte ?? _reloj.Ahora.Date.AddDays(-1)) };
 
     private string Usuario => User.FindFirstValue("name") ?? "sistema";
 
@@ -94,6 +121,7 @@ public class ReservasController : ControllerBase
         {
             IdReserva = r.IdReserva, Cliente = r.Cliente?.Nombre ?? "", Habitacion = r.NumeroHabitacion,
             FechaInicio = r.FechaInicio, FechaFin = r.FechaFin, Huespedes = r.Huespedes, Estado = r.Estado.ToString(),
+            Penalidad = r.Penalidad, PenalidadExonerada = r.PenalidadExonerada,
         }).ToList();
     }
 

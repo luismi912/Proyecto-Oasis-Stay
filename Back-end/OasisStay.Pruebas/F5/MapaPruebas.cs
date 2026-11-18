@@ -245,6 +245,7 @@ public class MapaUnidadPruebas
         public IReadOnlyList<Reserva> BuscarPorHabitacionYFechas(Habitacion h, DateTime a, DateTime b) { Otras++; return Datos; }
         public void Guardar(Reserva reserva) { Otras++; }
         public Reserva? BuscarPorId(int idReserva) { Otras++; return null; }
+        public IReadOnlyList<Reserva> ListarConfirmadasHasta(DateTime corte) { Otras++; return Array.Empty<Reserva>(); } // F4 [D-44]
     }
 
     [Fact] // [JIRA US-09 NFR] una consulta de habitaciones y una por estado de reserva, sin N+1

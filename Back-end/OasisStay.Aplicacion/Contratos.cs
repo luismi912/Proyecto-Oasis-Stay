@@ -47,6 +47,8 @@ public interface IRepositorioReservas
     Reserva? BuscarPorId(int idReserva);
     /// <summary>Lista de reservas del front (F2) [E2 §6].</summary>
     IReadOnlyList<Reserva> Listar(EstadoReserva? estado, string? texto);
+    /// <summary>Confirmadas con FechaInicio ≤ fechaCorte, para el No-Show [DE#4 CP-R05][D-44].</summary>
+    IReadOnlyList<Reserva> ListarConfirmadasHasta(DateTime fechaCorte);
 }
 
 /// <summary>Huéspedes; búsqueda por documento (autocompletado) [JIRA US-03 ESC2][D-03].</summary>

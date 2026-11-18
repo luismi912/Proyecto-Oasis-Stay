@@ -67,6 +67,9 @@ public static class ExtensionesDi
         s.AddSingleton<IGeneradorFacturaPdf, FacturaPdfGenerator>();
         s.AddScoped<ISemillaDemo, SemillaDemoF3>(); // [D-39]
         s.AddScoped<ISemillaDemo, SemillaDemoF5>(); // [D-39][D-41]
+        // F4 [DE#4][D-44]
+        s.AddScoped<ICancelacionReservas>(sp => (GestionReservas)sp.GetRequiredService<IGestionReservas>());
+        s.AddScoped<ISemillaDemo, SemillaDemoF4>(); // [D-39][D-41]
         s.AddScoped<EjecutorSemillaDemo>();
         return s;
     }
