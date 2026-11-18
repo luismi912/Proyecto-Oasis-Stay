@@ -61,6 +61,18 @@ public class HabitacionesController : ControllerBase
         return _gestion.ObtenerHabitaciones(filtro).Select(AHabitacion).ToList();
     }
 
+    /// <summary>Mapa por pisos [DS5][JIRA US-09][D-34]: solo Recepcionista y Administrador.</summary>
+    [HttpGet("distribucion")]
+    [Authorize(Roles = "Administrador,Recepcionista")]
+    public ActionResult<List<DistribucionHabitacionRespuesta>> Distribucion()
+        => _gestion.ObtenerDistribucionHabitaciones().Select(m => new DistribucionHabitacionRespuesta
+        {
+            Numero = m.Numero, Piso = m.Piso, Tipo = m.Tipo, Estado = m.Estado, PrecioNoche = m.PrecioNoche,
+            MotivoMantenimiento = m.MotivoMantenimiento,
+            Reserva = m.Reserva is null ? null : new ReservaActivaRespuesta
+            { IdReserva = m.Reserva.IdReserva, Huesped = m.Reserva.Huesped, FechaLlegada = m.Reserva.FechaLlegada, FechaSalida = m.Reserva.FechaSalida },
+        }).ToList();
+
     /// <summary>[DS2][JIRA US-02][DE#1 §5][D-34]</summary>
     [HttpPut("{numero:int}/estado")]
     [Authorize(Roles = TodosLosRoles)]
