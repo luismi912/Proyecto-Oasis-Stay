@@ -1,11 +1,18 @@
 @page
 @model HistorialModel
+@using System.Globalization
 @{
     ViewData["Title"] = "Historial y reportes"; ViewData["Subtitle"] = "Consulta y exporta la actividad del hotel";
+    var co = CultureInfo.GetCultureInfo("es-CO");
 }
 <div class="content-banner"><span><strong>Ingresos este mes: $48.260.500 COP</strong><small>+12,4% frente al mes
-    anterior · 128 reservas completadas</small></span><a class="primary-button" href="#">↓ Exportar reporte</a>
+    anterior · 128 reservas completadas</small></span><button type="button" class="primary-button" id="exportar-reporte" disabled aria-disabled="true"
+    title="Disponible con la exportación de reportes">↓ Exportar reporte</button>
 </div>
+@if (Model.Error != null)
+{
+    <div class="toast error" role="alert">@Model.Error</div>
+}
 <section class="table-card">
     <div class="table-head">
         <div>
@@ -13,36 +20,168 @@
             <p>Consulta, filtra y exporta el registro de operaciones.</p>
         </div>
     </div>
-    <div class="filters"><input placeholder="⌕  Buscar cliente, reserva o habitación..." /><select>
-        <option>Junio 2026</option>
-        <option>Mayo 2026</option>
-    </select><select>
-    <option>Todos los estados</option>
-    <option>Pagado</option>
-</select></div>
-<table class="data-table">
-    <thead>
-        <tr>
-            <th>ID reserva</th>
-            <th>Cliente</th>
-            <th>Habitación</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>Pago</th>
-            <th>Monto total</th>
-        </tr>
-    </thead>
-    <tbody>@foreach (var item in new[] { ("OS-24058","Valentina Ríos","201","12 Jun, 2026","15 Jun, 2026","Pagado","$1.142.400"),("OS-24057","Santiago Vélez","103","11 Jun, 2026","14 Jun, 2026","Pendiente","$428.400"),("OS-24056","Laura Castillo","302","10 Jun, 2026","13 Jun, 2026","Pagado","$660.450"),("OS-24055","Tomás Restrepo","204","09 Jun, 2026","11 Jun, 2026","Pagado","$440.300") }) {
-        <tr>
-            <td><strong>@item.Item1</strong></td>
-            <td>@item.Item2</td>
-            <td>Hab. @item.Item3</td>
-            <td>@item.Item4</td>
-            <td>@item.Item5</td>
-            <td><span class="payment @(item.Item6 == "Pendiente" ? "pending" : "")">@item.Item6</span></td>
-            <td><strong>@item.Item7</strong></td>
-        </tr>
-    }
-</tbody>
-</table>
+    <form method="get" class="filters" id="filtros-historial">
+        <input name="Q" value="@Model.Q" placeholder="⌕  Buscar cliente, reserva o habitación..." aria-label="Buscar" />
+        <select name="Estado" aria-label="Estado">
+            <option value="">Todos los estados</option>
+            @foreach (var e in new[] { "Confirmada", "EnCurso", "Finalizada", "Cancelada", "NoShow" })
+            {
+                <option value="@e" selected="@(Model.Estado == e)">@e</option>
+            }
+        </select>
+        <input name="Usuario" value="@Model.Usuario" placeholder="Usuario (ej. jrodriguez)" aria-label="Usuario responsable" style="flex:.6" />
+        <input type="date" name="Desde" value="@(Model.Desde?.ToString("yyyy-MM-dd"))" aria-label="Desde" style="flex:.4" />
+        <input type="date" name="Hasta" value="@(Model.Hasta?.ToString("yyyy-MM-dd"))" aria-label="Hasta" style="flex:.4" />
+        <button class="secondary-button" type="submit">Filtrar</button>
+        @if (Model.HayFiltros)
+        {
+            <a class="secondary-button" asp-page="/Ventanas/Historial" id="limpiar-filtros">Limpiar</a>
+        }
+    </form>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID reserva</th>
+                <th>Cliente</th>
+                <th>Habitación</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Pago</th>
+                <th>Monto total</th>
+                <th>Historial</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Reservas)
+            {
+                <tr>
+                    <td><strong>#@item.IdReserva</strong></td>
+                    <td>@item.Cliente</td>
+                    <td>Hab. @item.Habitacion</td>
+                    <td>@item.FechaInicio.ToString("dd MMM, yyyy", co)</td>
+                    <td>@item.FechaFin.ToString("dd MMM, yyyy", co)</td>
+                    @if (Model.Cobros.TryGetValue(item.IdReserva, out var cobro))
+                    {
+                        <td><span class="payment @(cobro.EstadoPago == "Pendiente" ? "pending" : "")">@cobro.EstadoPago</span></td>
+                        <td><strong>$@cobro.Total.ToString("N0", co)</strong></td>
+                    }
+                    else
+                    {
+                        <td><span class="payment pending">@item.Estado</span></td>
+                        <td>—</td>
+                    }
+                    <td><button type="button" class="secondary-button" data-ver-historial data-modal-open="historial-modal"
+                                data-id="@item.IdReserva" data-cliente="@item.Cliente">Ver historial</button></td>
+                </tr>
+            }
+            @if (!Model.Reservas.Any())
+            {
+                <tr id="sin-resultados"><td colspan="8" class="empty-state">@HistorialModel.TextoSinResultados</td></tr>
+            }
+        </tbody>
+    </table>
 </section>
+
+@if (Model.Eventos != null && Model.Eventos.Any())
+{
+    <section class="table-card" id="bitacora-filtrada">
+        <div class="table-head">
+            <div>
+                <h2>Transacciones registradas</h2>
+                <p>@Model.Eventos.Count evento(s) en orden cronológico@(string.IsNullOrWhiteSpace(Model.Usuario) ? "" : " de " + Model.Usuario.Trim()).</p>
+            </div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr><th>Fecha y hora</th><th>Reserva</th><th>Usuario</th><th>Acción</th><th>Valor anterior</th><th>Valor nuevo</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var ev in Model.Eventos)
+                {
+                    <tr>
+                        <td>@ev.FechaHora.ToString("dd/MM/yyyy HH:mm", co)</td>
+                        <td><strong>#@ev.IdReserva</strong></td>
+                        <td>@ev.Usuario</td>
+                        <td>@ev.Accion</td>
+                        <td>@(ev.ValorAnterior ?? "—")</td>
+                        <td>@(ev.ValorNuevo ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+<div class="modal-backdrop" id="historial-modal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="historial-title">
+        <div class="modal-heading">
+            <div><span class="eyebrow">Bitácora de auditoría</span>
+                <h2 id="historial-title">Historial de la reserva</h2>
+                <p id="historial-sub">Cada acción con su fecha y usuario responsable.</p>
+            </div>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+        <div class="modal-main">
+            <div class="alert-box" id="historial-error" hidden></div>
+            <ol class="linea-tiempo" id="linea-tiempo"></ol>
+            <p class="empty-state" id="linea-vacia" hidden>@HistorialModel.TextoSinResultados</p>
+        </div>
+        <div class="modal-actions"><button type="button" class="secondary-button" data-modal-close>Cerrar</button></div>
+    </section>
+</div>
+
+<style>
+    .empty-state { text-align: center; color: var(--muted, #6b7280); padding: 22px; }
+    .filters { flex-wrap: wrap; align-items: center; }
+    .filters input[type=date] { min-width: 140px; }
+    #exportar-reporte[disabled] { opacity: .5; cursor: not-allowed; }
+    .linea-tiempo { list-style: none; margin: 0; padding: 4px 0 0 6px; position: relative; max-height: 55vh; overflow: auto; }
+    .linea-tiempo li { position: relative; padding: 0 0 18px 34px; border-left: 2px solid var(--line, #e5e7eb); margin-left: 12px; }
+    .linea-tiempo li:last-child { border-left-color: transparent; padding-bottom: 4px; }
+    .linea-tiempo .punto { position: absolute; left: -13px; top: 0; width: 24px; height: 24px; border-radius: 50%; color: #fff; font-size: 13px;
+        display: flex; align-items: center; justify-content: center; }
+    .punto.creacion { background: #16a34a; } .punto.edicion { background: #2563eb; } .punto.cancelacion { background: #dc2626; }
+    .linea-tiempo strong { display: block; }
+    .linea-tiempo small { color: var(--muted, #6b7280); display: block; }
+    .linea-tiempo .cambio { font-size: .9em; }
+</style>
+
+@section Scripts {
+    <script>
+        (function () {
+            const modal = document.getElementById("historial-modal");
+            const lista = document.getElementById("linea-tiempo");
+            const vacia = document.getElementById("linea-vacia");
+            const error = document.getElementById("historial-error");
+            const sub = document.getElementById("historial-sub");
+            const tipo = accion => /cancel|no-show/i.test(accion) ? ["cancelacion", "✕"] : /creada/i.test(accion) ? ["creacion", "＋"] : ["edicion", "✎"];
+            const fecha = iso => { const d = new Date(iso); const p = n => String(n).padStart(2, "0");
+                return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+
+            document.querySelectorAll("[data-ver-historial]").forEach(boton => boton.addEventListener("click", async () => {
+                const id = boton.dataset.id;
+                document.getElementById("historial-title").textContent = `Historial de la reserva #${id}`;
+                sub.textContent = boton.dataset.cliente ? `Cliente: ${boton.dataset.cliente}` : "";
+                lista.innerHTML = ""; vacia.hidden = true; error.hidden = true;
+                try {
+                    const r = await fetch(`?handler=LineaTiempo&id=${id}`, { headers: { Accept: "application/json" } });
+                    const datos = await r.json();
+                    if (!r.ok) { error.textContent = datos.detail || "No se pudo consultar el historial."; error.hidden = false; return; }
+                    if (datos.length === 0) { vacia.hidden = false; return; }
+                    datos.forEach(e => {
+                        const [clase, icono] = tipo(e.accion);
+                        const li = document.createElement("li");
+                        const cambio = (e.valorAnterior || e.valorNuevo) ? `${e.valorAnterior ?? "—"} → ${e.valorNuevo ?? "—"}` : "";
+                        li.innerHTML = `<span class="punto ${clase}" aria-hidden="true"></span><strong></strong><small class="cuando"></small><small class="quien"></small><small class="cambio"></small>`;
+                        li.querySelector(".punto").textContent = icono;
+                        li.querySelector("strong").textContent = e.accion;
+                        li.querySelector(".cuando").textContent = fecha(e.fechaHora);
+                        li.querySelector(".quien").textContent = `Usuario: ${e.usuario}`;
+                        li.querySelector(".cambio").textContent = cambio;
+                        lista.appendChild(li);
+                    });
+                } catch { error.textContent = "No se pudo consultar el historial."; error.hidden = false; }
+            }));
+        })();
+    </script>
+}
