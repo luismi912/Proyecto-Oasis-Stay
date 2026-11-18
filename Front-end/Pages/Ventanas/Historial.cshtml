@@ -5,8 +5,7 @@
     ViewData["Title"] = "Historial y reportes"; ViewData["Subtitle"] = "Consulta y exporta la actividad del hotel";
     var co = CultureInfo.GetCultureInfo("es-CO");
 }
-<div class="content-banner"><span><strong>Ingresos este mes: $48.260.500 COP</strong><small>+12,4% frente al mes
-    anterior · 128 reservas completadas</small></span><button type="button" class="primary-button" id="exportar-reporte" data-modal-open="reporte-modal">↓ Exportar reporte</button>
+<div class="content-banner"><span><strong id="ind-ingresos-mes">Ingresos este mes: $@Model.Indicadores.IngresosMes.ToString("N0", co) COP</strong><small id="ind-completadas">@Model.Indicadores.ReservasCompletadasMes @(Model.Indicadores.ReservasCompletadasMes == 1 ? "reserva completada" : "reservas completadas")</small></span><button type="button" class="primary-button" id="exportar-reporte" data-modal-open="reporte-modal">↓ Exportar reporte</button>
 </div>
 @if (Model.Error != null)
 {

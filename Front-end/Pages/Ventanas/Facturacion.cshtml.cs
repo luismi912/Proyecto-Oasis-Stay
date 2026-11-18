@@ -19,6 +19,8 @@ namespace Front_end.Pages
 
         public IReadOnlyList<PendienteDto> Pendientes { get; private set; } = Array.Empty<PendienteDto>();
         public ResumenCobroDto? Detalle { get; private set; }
+        /// <summary>Cifras de las tarjetas calculadas por la API [D-48].</summary>
+        public IndicadoresDto Indicadores { get; private set; } = new(0m, 0, 0m, 0, 0);
         /// <summary>Factura recién emitida (para mostrar «Factura generada con éxito» y el PDF) [DS4 mostrarComprobantePDFYExito].</summary>
         public int? FacturaId { get; private set; }
         public int? Folio { get; private set; }
@@ -96,6 +98,7 @@ namespace Front_end.Pages
         {
             try
             {
+                Indicadores = await _api.IndicadoresAsync();
                 Pendientes = await _api.PendientesAsync();
                 if (id.HasValue) Detalle = await _api.TotalesAsync(id.Value);
             }

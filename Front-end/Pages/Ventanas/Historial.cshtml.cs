@@ -32,8 +32,14 @@ namespace Front_end.Pages
         public bool HayFiltros => !string.IsNullOrWhiteSpace(Q) || !string.IsNullOrWhiteSpace(Estado)
             || !string.IsNullOrWhiteSpace(Usuario) || Desde.HasValue || Hasta.HasValue;
 
+        /// <summary>Cifras del banner calculadas por la API [D-48].</summary>
+        public IndicadoresDto Indicadores { get; private set; } = new(0m, 0, 0m, 0, 0);
+
         public async Task OnGetAsync()
         {
+            try { Indicadores = await _facturacion.IndicadoresAsync(); }
+            catch (ApiException) { /* el banner queda en cero; el error de la lista se muestra abajo */ }
+            catch (HttpRequestException) { }
             try
             {
                 var lista = await _reservas.ListarAsync(Q);

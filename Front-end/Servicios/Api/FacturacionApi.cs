@@ -13,6 +13,7 @@ public record ResumenCobroDto(int IdReserva, string Huesped, int NumeroHabitacio
 public record ReciboDto(int IdPago, DateTime Fecha, decimal Monto, string Metodo, decimal? Vuelto, decimal SaldoRestante);
 public record FacturaDto(int IdFactura, int Folio, DateTime FechaEmision, decimal ImpuestoIVA, decimal ValorTotal, int IdReserva, int IdHabitacion);
 public record CheckoutDto(FacturaDto Factura, string PdfUrl);
+public record IndicadoresDto(decimal IngresosMes, int FacturasMes, decimal PorCobrar, int CuentasAbiertas, int ReservasCompletadasMes);
 public record CotizacionDto(int Noches, decimal Tarifa, decimal Subtotal, decimal Iva, decimal Total);
 
 /// <summary>Cliente tipado de facturación, pagos y check-out [razor-integracion][D-10]; sin reglas de negocio.</summary>
@@ -24,6 +25,10 @@ public class FacturacionApi
 
     public async Task<IReadOnlyList<PendienteDto>> PendientesAsync()
         => await LeerAsync<List<PendienteDto>>(await _http.GetAsync("api/facturacion/pendientes"));
+
+    /// <summary>Cifras reales de tarjetas y banner [D-48].</summary>
+    public async Task<IndicadoresDto> IndicadoresAsync()
+        => await LeerAsync<IndicadoresDto>(await _http.GetAsync("api/facturacion/indicadores"));
 
     public async Task<ResumenCobroDto> TotalesAsync(int idReserva)
         => await LeerAsync<ResumenCobroDto>(await _http.GetAsync($"api/facturacion/{idReserva}/totales"));
