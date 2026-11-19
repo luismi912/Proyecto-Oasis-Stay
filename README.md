@@ -346,8 +346,7 @@ siguiente cita solo lo que se ve hoy en el código.
 ## 13. Despliegue
 
 - **Nivel de especificación (nube)**: diagrama de producción con balanceador, PaaS y puerto 443, en
-  [`docs/diagramas/despliegue/`](docs/diagramas/despliegue/README.md) y la guía de la profesora en
-  [`docs/fuentes/guia-despliegue-profesora.md`](docs/fuentes/guia-despliegue-profesora.md).
+  [`docs/diagramas/despliegue/`](docs/diagramas/despliegue/README.md).
 - **Nivel de instancia local**: el entorno real del MVP (SQL Server local, puertos 5001 y 7001), descrito en las secciones 5 a 7.
 - **Estado**: **PENDIENTE de despliegue en la nube** ([D-14](docs/decisiones.md)). El proyecto no se ha desplegado a la nube;
   el MVP se evalúa en la instancia local.
@@ -376,10 +375,7 @@ plan de mantenimiento con `BACKUP DATABASE OasisStay`). La aplicación no borra 
 | [`docs/jira/`](docs/jira/README.md) | Tablero de Jira con las historias de usuario US-01 a US-11 |
 | [`docs/contrato/CONTRATO.md`](docs/contrato/CONTRATO.md) | Lista cerrada de reglas, estados, nombres, firmas y mensajes |
 | [`docs/decisiones.md`](docs/decisiones.md) | Registro de decisiones D-01 a D-48 |
-| [`docs/enlaces.md`](docs/enlaces.md) | Inventario de enlaces de diagramas |
 | [`docs/trazabilidad/matriz-trazabilidad.md`](docs/trazabilidad/matriz-trazabilidad.md) | Matriz de trazabilidad por historia (RU, RF, US, escenarios, pruebas, commits) |
-| [`docs/fuentes/guia-entrega-3.md`](docs/fuentes/guia-entrega-3.md) | Guía de la Entrega 3 |
-
 ## 16. Evidencias del MVP
 
 Capturas tomadas sobre la aplicación en marcha y salidas de consola, en `docs/evidencias/Fn/`:
@@ -407,7 +403,7 @@ historial de cada archivo (`git log --follow <archivo>`).
 
 | Integrante | N.º de commits | Principales contribuciones | Enlace al historial |
 |---|---|---|---|
-| Simon Herrera Acosta | 74 | Backend F0 a F7, migraciones EF Core, Identity y JWT, cadena de validación, Decorator, Strategy, Facade, reportes, semillas demo, pruebas xUnit, evidencias y README | [Commits de Simonh003](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=Simonh003) |
+| Simon Herrera Acosta | 75 | Backend F0 a F7, migraciones EF Core, Identity y JWT, cadena de validación, Decorator, Strategy, Facade, reportes, semillas demo, pruebas xUnit, evidencias y README | [Commits de Simonh003](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=Simonh003) |
 | Juan David Jiménez | 7 | Diagramas de secuencia y prototipo de Figma | [Commits de JuandaJza](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=JuandaJza) |
 | Luis Miguel Arango | 7 | Creación del repositorio, Entregable 2 corregido, diagrama de componentes, diagrama de estados y Entregable 3 | [Commits de luismi912](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=luismi912) |
 | Thomas Muñoz | 6 | Front-end según Figma, `.gitignore`, modelo C4, diagrama de clases, Entregable 1 y tablero de Jira | [Commits de ThomasTN77](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=ThomasTN77) |
