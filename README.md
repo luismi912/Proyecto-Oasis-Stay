@@ -36,7 +36,7 @@ validaciones implementados, integrado con el front existente en ASP.NET Core Raz
 | Integrante | Participación en la documentación y el proyecto |
 |---|---|
 | Simon Herrera Acosta | Backend del MVP (F0 a F7), integración con el front, pruebas, semilla demo, evidencias y README |
-| Luis Miguel Arango | Creación del repositorio, Entregable 2 corregido, diagrama de componentes y diagrama de estados |
+| Luis Miguel Arango | Creación del repositorio, Entregable 2 corregido, diagrama de componentes, diagrama de estados y Entregable 3 |
 | Thomas Muñoz | Front-end según Figma, modelo C4 (niveles 1 a 4), diagrama de clases, Entregable 1 y tablero de Jira |
 | Juan David Jiménez | Diagramas de secuencia y prototipo de Figma |
 | Yeison Cardozo | Diagrama de despliegue UML |
@@ -365,6 +365,7 @@ plan de mantenimiento con `BACKUP DATABASE OasisStay`). La aplicación no borra 
 |---|---|
 | [`docs/entregables/entregable-1.md`](docs/entregables/entregable-1.md) | Entregable 1: problema, requisitos (RU, RF, RNF, RN) y trazabilidad |
 | [`docs/entregables/entregable-2.md`](docs/entregables/entregable-2.md) | Entregable 2: alcance del MVP, patrones GoF, prototipo, diagramas de actividades y SOLID |
+| [`docs/entregables/entregable-3.md`](docs/entregables/entregable-3.md) | Entregable 3: MVP funcional con flujos alternativos, repositorio Git y evidencias |
 | [`docs/diagramas/c4/`](docs/diagramas/c4/README.md) | Modelo C4 niveles 1 a 4 (`.drawio`, `.svg` y `C4.zip`) |
 | [`docs/diagramas/clases/`](docs/diagramas/clases/README.md) | Diagrama de clases |
 | [`docs/diagramas/componentes/`](docs/diagramas/componentes/README.md) | Diagrama de componentes |
@@ -406,9 +407,9 @@ historial de cada archivo (`git log --follow <archivo>`).
 
 | Integrante | N.º de commits | Principales contribuciones | Enlace al historial |
 |---|---|---|---|
-| Simon Herrera Acosta | 73 | Backend F0 a F7, migraciones EF Core, Identity y JWT, cadena de validación, Decorator, Strategy, Facade, reportes, semillas demo, pruebas xUnit, evidencias y README | [Commits de Simonh003](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=Simonh003) |
+| Simon Herrera Acosta | 74 | Backend F0 a F7, migraciones EF Core, Identity y JWT, cadena de validación, Decorator, Strategy, Facade, reportes, semillas demo, pruebas xUnit, evidencias y README | [Commits de Simonh003](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=Simonh003) |
 | Juan David Jiménez | 7 | Diagramas de secuencia y prototipo de Figma | [Commits de JuandaJza](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=JuandaJza) |
-| Luis Miguel Arango | 6 | Creación del repositorio, Entregable 2 corregido, diagrama de componentes y diagrama de estados | [Commits de luismi912](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=luismi912) |
+| Luis Miguel Arango | 7 | Creación del repositorio, Entregable 2 corregido, diagrama de componentes, diagrama de estados y Entregable 3 | [Commits de luismi912](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=luismi912) |
 | Thomas Muñoz | 6 | Front-end según Figma, `.gitignore`, modelo C4, diagrama de clases, Entregable 1 y tablero de Jira | [Commits de ThomasTN77](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=ThomasTN77) |
 | Yeison Cardozo | 4 | Diagrama de despliegue UML | [Commits de yeisongomez19941-dev](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=yeisongomez19941-dev) |
 
