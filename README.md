@@ -35,11 +35,11 @@ validaciones implementados, integrado con el front existente en ASP.NET Core Raz
 
 | Integrante | Participación en la documentación y el proyecto |
 |---|---|
-| Simon Herrera Acosta | Backend, integración con el front, pruebas, semilla demo y documentación base |
-| Luis Miguel Arango | Requisitos del Entregable 1 e historias de usuario de Jira |
-| Yeison Cardozo | Modelo C4, diagrama de componentes y despliegue |
-| Thomas Muñoz | Interfaz del front según Figma, Entregable 2 y patrones GoF |
-| Juan David Jiménez | Diagramas UML de estado, secuencia, actividad y clases |
+| Simon Herrera Acosta | Backend del MVP (F0 a F7), integración con el front, pruebas, semilla demo, evidencias y README |
+| Luis Miguel Arango | Creación del repositorio, Entregable 2 corregido, diagrama de componentes y diagrama de estados |
+| Thomas Muñoz | Front-end según Figma, modelo C4 (niveles 1 a 4), diagrama de clases, Entregable 1 y tablero de Jira |
+| Juan David Jiménez | Diagramas de secuencia y prototipo de Figma |
+| Yeison Cardozo | Diagrama de despliegue UML |
 
 ## 2. Tecnologías
 
@@ -83,13 +83,13 @@ Back-end/OasisStay.Pruebas        Pruebas xUnit de dominio, aplicación, API (en
 
 - Dependencias: Api → Aplicacion → Dominio; Infraestructura → Aplicacion (implementa sus contratos). El dominio no
   depende de ninguna otra capa.
-- Modelo completo: [C4 (niveles 1 a 4)](docs/fuentes/c4-modelo.md) y [diagrama de componentes](docs/fuentes/diagrama-componentes.md).
-  Los diagramas fuente están en [docs/fuentes/diagramas/](docs/fuentes/diagramas/) (`c4-nivel1..4`, `componentes`, `clases-e1`, `actividad-1..5`, `secuencia-*`).
+- Modelo completo: [C4 (niveles 1 a 4)](docs/diagramas/c4/README.md) y [diagrama de componentes](docs/diagramas/componentes/README.md).
+  Todos los diagramas están en [docs/diagramas/](docs/diagramas/) (sección 15).
 
 ## 4. Funcionalidades implementadas (US-01 a US-11)
 
 Las 11 historias de usuario de Jira (proyecto SCRUM) están implementadas, cada una con sus tres escenarios
-(33 escenarios). Fuente: [historias de usuario](docs/fuentes/jira/README.md) (`docs/fuentes/jira/US-01.md` a `US-11.md`).
+(33 escenarios). Fuente: [tablero de Jira del proyecto](docs/jira/README.md) (historias SCRUM con criterios Gherkin).
 Alcance: [D-41](docs/decisiones.md) (las 11 historias con sus 3 escenarios).
 
 | Funcionalidad | Historia (RF) | Fase | Resumen | Decisiones |
@@ -194,12 +194,12 @@ ajuste `Api:BaseUrl` del front (variable `Api__BaseUrl`) al puerto HTTP de la AP
 dotnet test Oasis_Stay.slnx --nologo -v q
 ```
 
-Resultado de la última ejecución (2026-11-18, sobre `main` en 7f51925): **244 pruebas superadas, 0 fallidas**.
+Resultado de la última ejecución (2026-11-18, sobre `main` en accc78f): **245 pruebas superadas, 0 fallidas**.
 Para cobertura: `dotnet test Oasis_Stay.slnx --collect:"XPlat Code Coverage"`.
 
 Las pruebas están en `Back-end/OasisStay.Pruebas/` por fase (`F0` a `F7`, `F2b` dentro de `F2`, `F4a`). Cada escenario
 de Jira es una prueba `USnn_ESCn_...` (33 en total); los casos de prueba del contrato (`CP_H01..08`, `CP_R01..08`) tienen
-su ID en el nombre. La trazabilidad completa de estas pruebas está en la [matriz de trazabilidad](docs/sustentacion/matriz-trazabilidad.md).
+su ID en el nombre. La trazabilidad completa de estas pruebas está en la [matriz de trazabilidad](docs/trazabilidad/matriz-trazabilidad.md).
 
 ## 9. Semilla demo (datos de cada historia de usuario)
 
@@ -281,12 +281,12 @@ y `Aplicacion/Reportes.cs`, y su origen en el [contrato](docs/contrato/CONTRATO.
 ### 10.2 Flujos alternativos demostrables por historia
 
 Cada escenario tiene su prueba xUnit (`Back-end/OasisStay.Pruebas`) y, cuando existe, su captura en
-`docs/evidencias/`. Los nombres de prueba son los de la [matriz de trazabilidad](docs/sustentacion/matriz-trazabilidad.md).
+`docs/evidencias/`. Los nombres de prueba son los de la [matriz de trazabilidad](docs/trazabilidad/matriz-trazabilidad.md).
 
 | Historia | Escenario 1 (flujo principal) | Escenario 2 (alternativo) | Escenario 3 (alternativo o restricción) | Capturas |
 |---|---|---|---|---|
 | US-01 Disponibilidad | `US01_ESC1_ConsultaSuite_10al12Nov2026...` | `US01_ESC2_EstandarAgotada_AlertaYSugerencias` | `US01_ESC3_FechasInvalidas_15y14Nov2026_Bloquea` | `docs/evidencias/F2b/US01-ESC1-suites-libres.png`, `US01-ESC2-alerta-con-alternativas.png`, `US01-ESC3-fechas-invalidas.png` |
-| US-02 Estado de habitación | `US02_ESC1_Hab301EnLimpiezaCompleta_PasaADisponibleVerde` | `US02_ESC2_MantenimientoSinMotivo_Bloquea` | `US02_ESC3_Hab204Ocupada_ForzarDisponible_ImpideYAvisaCheckOut` | Pendiente de capturas (ver sección 16) |
+| US-02 Estado de habitación | `US02_ESC1_Hab301EnLimpiezaCompleta_PasaADisponibleVerde` | `US02_ESC2_MantenimientoSinMotivo_Bloquea` | `US02_ESC3_Hab204Ocupada_ForzarDisponible_ImpideYAvisaCheckOut` | `docs/evidencias/F1/US02-ESC1-301-en-limpieza-a-disponible.png`, `US02-ESC2-mantenimiento-sin-motivo.png`, `US02-ESC3-204-ocupada-no-forzable.png` |
 | US-03 Huésped | `US03_ESC1_HuespedNuevo_Guarda` | `US03_ESC2_Autocompletado_CC1020304050` | `US03_ESC3_CorreoSinArrobaOTelefono310ABC_Invalido` | `docs/evidencias/F2b/US03-ESC1-US04-ESC1-reserva-creada-304.png`, `US03-ESC2-autocompletado.png`, `US03-ESC3-campos-invalidos.png` |
 | US-04 Asignación | `US04_ESC1_Hab304Suite_Asigna_PasaAReservada` | `US04_ESC2_DosAsignacionesSimultaneas_SoloUnaGana` y `US04_ESC2_5HuespedesEnEstandarCapMax2_RechazaPorCapacidad` | `US04_ESC3_Reasigna105a107_105Disponible_107Reservada` y `US04_ESC3_Reasignar_Pantalla_Upgrade_PideConfirmacionConTextoExacto` | `docs/evidencias/F2b/US04-ESC2-capacidad-excedida.png`, `US04-ESC2-conflicto-toast.png`, `US04-ESC3-1..4` |
 | US-05 Cotización | `US05_ESC1_3Noches150000_Subtotal450000_Iva85500_Total535500` | `US05_ESC2_ConsumosYLateCheckout_Total321300` | `US05_ESC3_Ampl` (recálculo al ampliar fechas) | `docs/evidencias/F3/06-US05-ESC1-3noches-535500.png`, `07-US05-ESC2-consumos-late-321300.png`, `11-US05-ESC3-modal-3a5-noches.png` |
@@ -306,21 +306,21 @@ Recepcionista no accede al historial (`docs/evidencias/F4a/alt-recepcionista-den
 
 ### 11.1 Patrones GoF
 
-Las clases están verificadas con búsqueda en el código. El pseudocódigo de cada patrón es el de la
-[plantilla GoF](docs/fuentes/plantilla-patrones-gof.md) (`docs/fuentes/img/gof-image1..5.png`).
+Las clases están verificadas con búsqueda en el código. El análisis y el pseudocódigo de cada patrón están en la
+sección 3 (Patrones de diseño) del [Entregable 2](docs/entregables/entregable-2.md).
 
 | Patrón GoF | Archivo : clase | Problema que resuelve | Fuente |
 |---|---|---|---|
-| State | `Back-end/OasisStay.Dominio/Estados.cs` : `IEstadoHabitacion`, `ResultadoOperacion`; `Back-end/OasisStay.Dominio/EstadosHabitacion.cs` : `EstadoDisponible`, `EstadoReservada`, `EstadoOcupada`, `EstadoEnLimpieza`, `EstadoMantenimiento` | Transiciones válidas de la habitación sin `switch` repetido; una transición inválida devuelve `Rechazada(motivo)` | [C4-N4 §5](docs/fuentes/c4-modelo.md), [CONTRATO §4](docs/contrato/CONTRATO.md), `gof-image5.png`, RF-02, US-02 |
-| Chain of Responsibility | `Back-end/OasisStay.Dominio/Reservas.cs` : `ValidadorReserva` (abstracta), `ValidadorFechas`, `ValidadorCapacidad`, `ValidadorEstadoHabitacion`, `ValidadorSolapamiento`; armado en `Back-end/OasisStay.Aplicacion/GestionReservas.Registro.cs` (líneas 37-40) | Reglas de reserva (RN-01, RN-05) en orden y cortando en el primer error | `gof-image3.png`, [D-09](docs/decisiones.md), RF-03/RF-04 |
-| Decorator | `Back-end/OasisStay.Dominio/Cuenta.cs` : `ICuenta`, `EstadiaBase`, `CuentaDecorator` (abstracta), `CargoMinibar`, `CargoLateCheckout`, `ImpuestoIVA`; `ArmadorCuenta` | Cálculo de la cuenta en capas (base, minibar, late check-out, IVA como capa externa) | `gof-image4.png`, RN-03, RN-04, US-05 |
-| Strategy | `Back-end/OasisStay.Dominio/Pagos.cs` : `IEstrategiaPago`, `PagoEfectivo`, `PagoTarjeta`, `PagoTransferencia`, `ProcesadorPagos`; registro en `Back-end/OasisStay.Infraestructura/ExtensionesDi.cs` (líneas 59-62) | Un algoritmo de cobro por método (RN-06) sin condicionales por método | `gof-image2.png`, [D-13](docs/decisiones.md), [D-33](docs/decisiones.md), US-10 |
-| Facade | `Back-end/OasisStay.Aplicacion/Facturacion.cs` : `ICheckoutFacade`; `Back-end/OasisStay.Aplicacion/ServiciosFacturacion.cs` : `CheckoutFacade`; uso en `Back-end/OasisStay.Api/Controllers/FacturacionController.cs` (`api/reservas/{id}/checkout`) | Check-out en una transacción: cerrar cuenta, habitación a En Limpieza, archivar historial | `gof-image1.png`, [D-10](docs/decisiones.md), US-06 |
+| State | `Back-end/OasisStay.Dominio/Estados.cs` : `IEstadoHabitacion`, `ResultadoOperacion`; `Back-end/OasisStay.Dominio/EstadosHabitacion.cs` : `EstadoDisponible`, `EstadoReservada`, `EstadoOcupada`, `EstadoEnLimpieza`, `EstadoMantenimiento` | Transiciones válidas de la habitación sin `switch` repetido; una transición inválida devuelve `Rechazada(motivo)` | [C4 nivel 4](docs/diagramas/c4/README.md), [CONTRATO §4](docs/contrato/CONTRATO.md), [diagrama de estados](docs/diagramas/estados/README.md), RF-02, US-02 |
+| Chain of Responsibility | `Back-end/OasisStay.Dominio/Reservas.cs` : `ValidadorReserva` (abstracta), `ValidadorFechas`, `ValidadorCapacidad`, `ValidadorEstadoHabitacion`, `ValidadorSolapamiento`; armado en `Back-end/OasisStay.Aplicacion/GestionReservas.Registro.cs` (líneas 37-40) | Reglas de reserva (RN-01, RN-05) en orden y cortando en el primer error | [Entregable 2 §3](docs/entregables/entregable-2.md), [D-09](docs/decisiones.md), RF-03/RF-04 |
+| Decorator | `Back-end/OasisStay.Dominio/Cuenta.cs` : `ICuenta`, `EstadiaBase`, `CuentaDecorator` (abstracta), `CargoMinibar`, `CargoLateCheckout`, `ImpuestoIVA`; `ArmadorCuenta` | Cálculo de la cuenta en capas (base, minibar, late check-out, IVA como capa externa) | [Entregable 2 §3](docs/entregables/entregable-2.md), RN-03, RN-04, US-05 |
+| Strategy | `Back-end/OasisStay.Dominio/Pagos.cs` : `IEstrategiaPago`, `PagoEfectivo`, `PagoTarjeta`, `PagoTransferencia`, `ProcesadorPagos`; registro en `Back-end/OasisStay.Infraestructura/ExtensionesDi.cs` (líneas 59-62) | Un algoritmo de cobro por método (RN-06) sin condicionales por método | [Entregable 2 §3](docs/entregables/entregable-2.md), [D-13](docs/decisiones.md), [D-33](docs/decisiones.md), US-10 |
+| Facade | `Back-end/OasisStay.Aplicacion/Facturacion.cs` : `ICheckoutFacade`; `Back-end/OasisStay.Aplicacion/ServiciosFacturacion.cs` : `CheckoutFacade`; uso en `Back-end/OasisStay.Api/Controllers/FacturacionController.cs` (`api/reservas/{id}/checkout`) | Check-out en una transacción: cerrar cuenta, habitación a En Limpieza, archivar historial | [Entregable 2 §3](docs/entregables/entregable-2.md), [D-10](docs/decisiones.md), US-06 |
 
 ### 11.2 Principios SOLID
 
 La plantilla institucional de SOLID de Entregable 2 está **pendiente** ([D-17](docs/decisiones.md)): el enlace de SharePoint no
-tiene copia local. La sección 6 de [`docs/fuentes/entregable-2.md`](docs/fuentes/entregable-2.md) es el análisis de SOLID de Entregable 2 y
+tiene copia local. La sección 6 del [Entregable 2](docs/entregables/entregable-2.md) es el análisis de SOLID de Entregable 2 y
 describe el estado previo a la implementación, así que sus niveles de cumplimiento ya no reflejan el código. La tabla
 siguiente cita solo lo que se ve hoy en el código.
 
@@ -334,9 +334,9 @@ siguiente cita solo lo que se ve hoy en el código.
 
 ## 12. Coherencia código, UML y C4
 
-- **C4 nivel 4 y tabla de elementos**: [`docs/fuentes/c4-modelo.md`](docs/fuentes/c4-modelo.md) §5 relaciona cada patrón con su clase.
-- **Diagramas de clases y de componentes**: [`docs/fuentes/diagramas/clases-e1.md`](docs/fuentes/diagramas/clases-e1.md),
-  [`docs/fuentes/diagramas/componentes.md`](docs/fuentes/diagramas/componentes.md) y `docs/fuentes/img/diagrama-clases.svg`.
+- **C4 nivel 4 y tabla de elementos**: [`docs/diagramas/c4/README.md`](docs/diagramas/c4/README.md) relaciona cada patrón con su clase.
+- **Diagramas de clases y de componentes**: [`docs/diagramas/clases/`](docs/diagramas/clases/README.md) y
+  [`docs/diagramas/componentes/`](docs/diagramas/componentes/README.md).
 - **Diferencias de nombre conocidas**: el C4 usa `ValidadorSolap` y `ValidadorEstadoHab`; en el código son
   `ValidadorSolapamiento` y `ValidadorEstadoHabitacion`, nombres del contrato. El C4 también nombra `Facturacion.cshtml.cs`
   como consumidor de `ICheckoutFacade`, y la decisión [D-10](docs/decisiones.md) lo cambia por el controlador de la API.
@@ -346,10 +346,9 @@ siguiente cita solo lo que se ve hoy en el código.
 ## 13. Despliegue
 
 - **Nivel de especificación (nube)**: diagrama de producción con balanceador, PaaS y puerto 443, en
-  [`docs/fuentes/despliegue.md`](docs/fuentes/despliegue.md) y la guía de la profesora en
+  [`docs/diagramas/despliegue/`](docs/diagramas/despliegue/README.md) y la guía de la profesora en
   [`docs/fuentes/guia-despliegue-profesora.md`](docs/fuentes/guia-despliegue-profesora.md).
-- **Nivel de instancia local**: el entorno real del MVP (SQL Server local, puertos 5001 y 7001), descrito en las secciones 5 a 7 y
-  en [`docs/entrega3/despliegue-complemento.md`](docs/entrega3/despliegue-complemento.md).
+- **Nivel de instancia local**: el entorno real del MVP (SQL Server local, puertos 5001 y 7001), descrito en las secciones 5 a 7.
 - **Estado**: **PENDIENTE de despliegue en la nube** ([D-14](docs/decisiones.md)). El proyecto no se ha desplegado a la nube;
   el MVP se evalúa en la instancia local.
 
@@ -364,23 +363,21 @@ plan de mantenimiento con `BACKUP DATABASE OasisStay`). La aplicación no borra 
 
 | Documento | Contenido |
 |---|---|
-| [`docs/fuentes/README.md`](docs/fuentes/README.md) | Jerarquía de las fuentes |
-| [`docs/fuentes/guia-entrega-3.md`](docs/fuentes/guia-entrega-3.md) | Guía de la Entrega 3 |
-| [`docs/fuentes/entregable-1-requisitos.md`](docs/fuentes/entregable-1-requisitos.md) | Requisitos (RU, RF, RNF, RN) |
-| [`docs/fuentes/entregable-2.md`](docs/fuentes/entregable-2.md) | Entregable 2: alcance, patrones, prototipo, SOLID |
-| [`docs/fuentes/jira/`](docs/fuentes/jira/README.md) | Historias de usuario US-01 a US-11 con criterios Gherkin |
+| [`docs/entregables/entregable-1.md`](docs/entregables/entregable-1.md) | Entregable 1: problema, requisitos (RU, RF, RNF, RN) y trazabilidad |
+| [`docs/entregables/entregable-2.md`](docs/entregables/entregable-2.md) | Entregable 2: alcance del MVP, patrones GoF, prototipo, diagramas de actividades y SOLID |
+| [`docs/diagramas/c4/`](docs/diagramas/c4/README.md) | Modelo C4 niveles 1 a 4 (`.drawio`, `.svg` y `C4.zip`) |
+| [`docs/diagramas/clases/`](docs/diagramas/clases/README.md) | Diagrama de clases |
+| [`docs/diagramas/componentes/`](docs/diagramas/componentes/README.md) | Diagrama de componentes |
+| [`docs/diagramas/estados/`](docs/diagramas/estados/README.md) | Diagrama de estados |
+| [`docs/diagramas/secuencia/`](docs/diagramas/secuencia/Readme.md) | Diagramas de secuencia (5) |
+| [`docs/diagramas/despliegue/`](docs/diagramas/despliegue/README.md) | Diagrama de despliegue UML |
+| [`docs/figma/`](docs/figma/Readme.md) | Prototipo de la interfaz en Figma |
+| [`docs/jira/`](docs/jira/README.md) | Tablero de Jira con las historias de usuario US-01 a US-11 |
 | [`docs/contrato/CONTRATO.md`](docs/contrato/CONTRATO.md) | Lista cerrada de reglas, estados, nombres, firmas y mensajes |
 | [`docs/decisiones.md`](docs/decisiones.md) | Registro de decisiones D-01 a D-48 |
 | [`docs/enlaces.md`](docs/enlaces.md) | Inventario de enlaces de diagramas |
-| [`docs/fuentes/c4-modelo.md`](docs/fuentes/c4-modelo.md) | Modelo C4 niveles 1 a 4 |
-| [`docs/fuentes/diagrama-componentes.md`](docs/fuentes/diagrama-componentes.md) | Diagrama de componentes |
-| [`docs/fuentes/diagramas/`](docs/fuentes/diagramas/) | Diagramas fuente: `c4-nivel1..4`, `componentes`, `clases-e1`, `actividad-1..5` (`.drawio` y `.md`) |
-| [`docs/fuentes/diagramas-estado.md`](docs/fuentes/diagramas-estado.md) | Diagramas de estado |
-| [`docs/fuentes/diagramas-secuencia.md`](docs/fuentes/diagramas-secuencia.md), [`diagramas-secuencia-nuevos.md`](docs/fuentes/diagramas-secuencia-nuevos.md) | Diagramas de secuencia |
-| [`docs/fuentes/plantilla-patrones-gof.md`](docs/fuentes/plantilla-patrones-gof.md) | Plantilla de patrones GoF |
-| [`docs/fuentes/despliegue.md`](docs/fuentes/despliegue.md) | Diagrama de despliegue |
-| [`docs/sustentacion/matriz-trazabilidad.md`](docs/sustentacion/matriz-trazabilidad.md) | Matriz de trazabilidad por historia (RU, RF, US, escenarios, pruebas, commits) |
-| [`specs/`](specs/) | Fichas de cada funcionalidad (F0 a F7) |
+| [`docs/trazabilidad/matriz-trazabilidad.md`](docs/trazabilidad/matriz-trazabilidad.md) | Matriz de trazabilidad por historia (RU, RF, US, escenarios, pruebas, commits) |
+| [`docs/fuentes/guia-entrega-3.md`](docs/fuentes/guia-entrega-3.md) | Guía de la Entrega 3 |
 
 ## 16. Evidencias del MVP
 
@@ -389,6 +386,7 @@ Capturas tomadas sobre la aplicación en marcha y salidas de consola, en `docs/e
 | Fase | Carpeta | Contenido representativo |
 |---|---|---|
 | F0 | [`docs/evidencias/F0/`](docs/evidencias/F0/) | Acceso denegado por rol (`alt3-acceso-denegado.png`) |
+| F1 | [`docs/evidencias/F1/`](docs/evidencias/F1/) | US-02: limpieza a disponible, mantenimiento sin motivo, habitación ocupada no forzable |
 | F2 | [`docs/evidencias/F2/`](docs/evidencias/F2/) | Disponibilidad, fechas inválidas, check-in con y sin documento, reasignación por API (`08-reasignacion-api.txt`) |
 | F2b | [`docs/evidencias/F2b/`](docs/evidencias/F2b/) | US-01, US-03 y US-04 en pantalla (alternativas, autocompletado, reasignación con Upgrade) |
 | F3 | [`docs/evidencias/F3/`](docs/evidencias/F3/) | Cotización, pagos (tarjeta, mixto, efectivo con vuelto), factura y saldo pendiente |
@@ -398,21 +396,21 @@ Capturas tomadas sobre la aplicación en marcha y salidas de consola, en `docs/e
 | F6 | [`docs/evidencias/F6/`](docs/evidencias/F6/) | Modal de KPIs, exportación `.xlsx` y `.pdf`, rango de 400 días, sin movimientos (`api-escenarios.txt`) |
 | F7 | [`docs/evidencias/F7/`](docs/evidencias/F7/) | Indicadores de Facturación antes y después de emitir una factura (`verificacion.txt`) |
 
-**Pendiente:** no hay carpeta `docs/evidencias/F1/`; la pantalla de US-02 (cambio de estado) no tiene captura. Sus tres
-escenarios están cubiertos por pruebas xUnit.
 
 ## 17. Historial de commits y participación
 
-Historial de la rama `main` (`git shortlog -sne HEAD`, 2026-11-18). Historial general de commits:
+Historial de la rama `main` (`git shortlog -sn HEAD`, 2026-11-19). Historial general de commits:
 [github.com/luismi912/Proyecto-Oasis-Stay/commits/main](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main).
+Los diagramas y entregables de cada integrante se reubicaron en `docs/` con `git mv`, que conserva el autor y el
+historial de cada archivo (`git log --follow <archivo>`).
 
 | Integrante | N.º de commits | Principales contribuciones | Enlace al historial |
 |---|---|---|---|
-| Simon Herrera Acosta | 69 | Backend F0 a F7, migraciones EF Core, Identity y JWT, cadena de validación, Decorator, Strategy, Facade, reportes, semillas demo, pruebas xUnit y evidencias | [Historial general](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main) |
-| Thomas Muñoz | 2 | Front-end según Figma y `.gitignore` | [Historial general](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main) |
-| Luis Miguel Arango | 1 | Primer commit del repositorio | [Historial general](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main) |
-| Yeison Cardozo | 0 | Modelo C4, diagrama de componentes y despliegue | [Historial general](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main) |
-| Juan David Jiménez | 0 | Diagramas UML de estado, secuencia, actividad y clases | [Historial general](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main) |
+| Simon Herrera Acosta | 73 | Backend F0 a F7, migraciones EF Core, Identity y JWT, cadena de validación, Decorator, Strategy, Facade, reportes, semillas demo, pruebas xUnit, evidencias y README | [Commits de Simonh003](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=Simonh003) |
+| Juan David Jiménez | 7 | Diagramas de secuencia y prototipo de Figma | [Commits de JuandaJza](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=JuandaJza) |
+| Luis Miguel Arango | 6 | Creación del repositorio, Entregable 2 corregido, diagrama de componentes y diagrama de estados | [Commits de luismi912](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=luismi912) |
+| Thomas Muñoz | 6 | Front-end según Figma, `.gitignore`, modelo C4, diagrama de clases, Entregable 1 y tablero de Jira | [Commits de ThomasTN77](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=ThomasTN77) |
+| Yeison Cardozo | 4 | Diagrama de despliegue UML | [Commits de yeisongomez19941-dev](https://github.com/luismi912/Proyecto-Oasis-Stay/commits/main?author=yeisongomez19941-dev) |
 
 ## 18. Decisiones y pendientes
 
@@ -425,5 +423,4 @@ Las decisiones se resuelven en [`docs/decisiones.md`](docs/decisiones.md). Solo 
 | D-14 | Despliegue en la nube | **Pendiente** (solo especificación; instancia local en uso) |
 | D-22 | Tarifa Day Use (estancias de 0 noches) | Fuera de alcance |
 
-Otros pendientes de documentación: la verificación de coherencia por clase (sección 12) y la trazabilidad
-`docs/trazabilidad.md`, y la captura de US-02 (sección 16).
+Otro pendiente de documentación: la verificación de coherencia por clase (sección 12).
