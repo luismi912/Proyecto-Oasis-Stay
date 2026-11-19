@@ -6,8 +6,8 @@ Esta carpeta contiene los **5 diagramas de secuencia** del sistema de gestión h
 
 | # | Épica | Descripción del flujo modelado | Archivo |
 | :--- | :--- | :--- | :--- |
-| **1** | **EP-01: Auditoría y reportería financiera** | Consulta, consolidación y generación de reportes financieros y registros de auditoría operativa/contable. | `Secuencia4.png` |
-| **2** | **EP-02: Facturación, caja y check-out** | Cierre de estadía, liquidación de cargos, generación de factura, movimiento de caja y liberación de habitación. | `Secuencia3.png` |
+| **1** | **EP-01: Auditoría y reportería financiera** | Consulta, consolidación y generación de reportes financieros y registros de auditoría operativa/contable. | `Secuencia3.png` |
+| **2** | **EP-02: Facturación, caja y check-out** | Cierre de estadía, liquidación de cargos, generación de factura, movimiento de caja y liberación de habitación. | `Secuencia4.png` |
 | **3** | **EP-03: Gestión de habitaciones y disponibilidad** | Consulta de disponibilidad por fechas y administración/actualización de estados de las habitaciones. | `Secuencia2.png` |
 | **4** | **EP-04: Gestión de reservas y huéspedes** | Registro y consulta de huéspedes, creación/modificación de reservas y seguimiento de ingreso/estadía. | `Secuencia1.png` |
 | **5** | **EP-05: Experiencia de Usuario e Interfaz Front-end** | Interacción del usuario con las vistas, componentes de interfaz y navegación en el sistema. | `Secuencia5.png` |
@@ -19,14 +19,14 @@ Esta carpeta contiene los **5 diagramas de secuencia** del sistema de gestión h
 ### 1. EP-01: Auditoría y reportería financiera
 Modela el flujo de consulta y generación de reportes financieros y trazabilidad de auditoría dentro de **Oasis Stay**.
 
-![Diagrama de Secuencia EP-01 - Auditoría y reportería financiera](Secuencia4.drawio.png)
+![Diagrama de Secuencia EP-01 - Auditoría y reportería financiera](Secuencia3.drawio.png)
 
 ---
 
 ### 2. EP-02: Facturación, caja y check-out
 Representa la secuencia de cierre de estadía (`check-out`), emisión de factura, registro en caja y actualización del estado de la habitación.
 
-![Diagrama de Secuencia EP-02 - Facturación, caja y check-out](Secuencia3.drawio.png)
+![Diagrama de Secuencia EP-02 - Facturación, caja y check-out](Secuencia4.drawio.png)
 
 ---
 
