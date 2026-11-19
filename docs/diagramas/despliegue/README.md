@@ -84,6 +84,14 @@ Esta arquitectura garantiza que la carga de trabajo de la interfaz de usuario no
 
 ## Fase 4. Refinamiento del despliegue
 
+### Diagrama de despliegue final (corregido)
+
+Versión final usada en el Entregable 3. Se presenta en dos niveles: **especificación** (arquitectura objetivo en la nube, con balanceador, servidor web y servidor API separados y SQL Server gestionado) e **instancia** (el equipo donde se ejecuta y demuestra el MVP: Kestrel en los puertos 5001 y 7001 y SQL Server 2025 Developer). La pasarela de pagos y el servicio de correo aparecen como elementos «proyectados»: no forman parte del MVP.
+
+Enlace editable: <https://n9.cl/xufpd> · Fuente: [`diagrama-final.drawio`](diagrama-final.drawio)
+
+![Diagrama de despliegue final](diagrama-final.png)
+
 ### 8. Análisis de los atributos de calidad y principales riesgos del despliegue
 * **Disponibilidad:** Mejorada drásticamente en el diseño final gracias al uso de un Balanceador de Carga y la base de datos gestionada en la nube (PaaS).
 * **Seguridad:** Toda la comunicación entre nodos está cifrada (`HTTPS`). La capa de base de datos se mantiene en una red privada virtual y solo admite conexiones de la IP del servidor API.
