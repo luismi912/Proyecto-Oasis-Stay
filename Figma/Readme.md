@@ -6,3 +6,6 @@ Esta carpeta contiene la evidencia visual y el acceso al diseño de interfaz y e
 
 * [Ver prototipo interactivo en Figma](https://n9.cl/qumma)
 
+## Vista previa del diseño
+
+![Prototipo Oasis Stay](Figma.png)
