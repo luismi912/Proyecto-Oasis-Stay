@@ -19,32 +19,32 @@ Esta carpeta contiene los **5 diagramas de secuencia** del sistema de gestión h
 ### 1. EP-01: Auditoría y reportería financiera
 Modela el flujo de consulta y generación de reportes financieros y trazabilidad de auditoría dentro de **Oasis Stay**.
 
-![Diagrama de Secuencia EP-01 - Auditoría y reportería financiera](Secuencia4.png)
+![Diagrama de Secuencia EP-01 - Auditoría y reportería financiera](Secuencia4.drawio.png)
 
 ---
 
 ### 2. EP-02: Facturación, caja y check-out
 Representa la secuencia de cierre de estadía (`check-out`), emisión de factura, registro en caja y actualización del estado de la habitación.
 
-![Diagrama de Secuencia EP-02 - Facturación, caja y check-out](Secuencia3.png)
+![Diagrama de Secuencia EP-02 - Facturación, caja y check-out](Secuencia3.drawio.png)
 
 ---
 
 ### 3. EP-03: Gestión de habitaciones y disponibilidad
 Detalla cómo el sistema consulta la disponibilidad de habitaciones y gestiona su estado operativo.
 
-![Diagrama de Secuencia EP-03 - Gestión de habitaciones y disponibilidad](Secuencia2.png)
+![Diagrama de Secuencia EP-03 - Gestión de habitaciones y disponibilidad](Secuencia2.drawio.png)
 
 ---
 
 ### 4. EP-04: Gestión de reservas y huéspedes
 Describe el flujo para registrar/gestionar información de huéspedes y crear o administrar reservas en el sistema.
 
-![Diagrama de Secuencia EP-04 - Gestión de reservas y huéspedes](Secuencia1.png)
+![Diagrama de Secuencia EP-04 - Gestión de reservas y huéspedes](Secuencia1.drawio.png)
 
 ---
 
 ### 5. EP-05: Experiencia de Usuario e Interfaz Front-end
 Ilustra la comunicación entre la interfaz front-end, la experiencia de usuario y los servicios/controladores de la aplicación.
 
-![Diagrama de Secuencia EP-05 - Experiencia de Usuario e Interfaz Front-end](Secuencia5png)
+![Diagrama de Secuencia EP-05 - Experiencia de Usuario e Interfaz Front-end](Secuencia5.drawio.png)
